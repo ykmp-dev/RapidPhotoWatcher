@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    
+    <!-- Application Information -->
+    <AssemblyTitle>JPEG/RAW Folder Monitor</AssemblyTitle>
+    <AssemblyDescription>JPEG/RAWファイルの自動監視・リネーム・移動アプリケーション</AssemblyDescription>
+    <AssemblyCompany>YuberTokyo</AssemblyCompany>
+    <AssemblyProduct>JPEG/RAW Folder Monitor</AssemblyProduct>
+    <AssemblyCopyright>Copyright © 2024 YuberTokyo</AssemblyCopyright>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.1" />
+  </ItemGroup>
+
+</Project>

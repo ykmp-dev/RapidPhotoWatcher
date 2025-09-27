@@ -1,0 +1,35 @@
+name: CI Build
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '6.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Test build output
+      run: |
+        if (Test-Path "./bin/Release/net6.0-windows/JPEGFolderMonitor.exe") {
+          Write-Host "✓ Build successful - EXE file created"
+        } else {
+          Write-Host "✗ Build failed - EXE file not found"
+          exit 1
+        }

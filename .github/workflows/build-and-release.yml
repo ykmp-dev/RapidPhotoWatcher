@@ -1,0 +1,77 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # バージョンタグ (v1.0.0など) でトリガー
+  workflow_dispatch:  # 手動実行も可能
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '6.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build and publish
+      run: |
+        dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:PublishReadyToRun=true -o "./publish/win-x64"
+
+    - name: Create ZIP archive
+      run: |
+        Compress-Archive -Path "./publish/win-x64/*" -DestinationPath "./JPEGFolderMonitor-win-x64.zip"
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: JPEGFolderMonitor-win-x64
+        path: ./JPEGFolderMonitor-win-x64.zip
+
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}
+        release_name: JPEG/RAW Folder Monitor ${{ github.ref_name }}
+        body: |
+          ## JPEG/RAW Folder Monitor ${{ github.ref_name }}
+          
+          ### 新機能・変更点
+          - 新しいリリースです
+          
+          ### システム要件
+          - Windows 10/11 (x64)
+          - .NET 6.0 Runtime (セルフコンテインドなので不要)
+          
+          ### インストール方法
+          1. `JPEGFolderMonitor-win-x64.zip` をダウンロード
+          2. 任意のフォルダに展開
+          3. `JPEGFolderMonitor.exe` を実行
+          
+          ### サポート対象ファイル
+          - JPEG: .jpg, .jpeg
+          - RAW: .cr2, .cr3, .arw, .nef, .rw2, .orf, .dng
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Asset
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./JPEGFolderMonitor-win-x64.zip
+        asset_name: JPEGFolderMonitor-win-x64.zip
+        asset_content_type: application/zip
