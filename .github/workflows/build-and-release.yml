@@ -38,21 +38,25 @@ jobs:
 
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/')
-      uses: actions/create-release@v1
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ github.ref_name }}
-        release_name: JPEG/RAW Folder Monitor ${{ github.ref_name }}
+        name: JPEG/RAW Folder Monitor ${{ github.ref_name }}
         body: |
           ## JPEG/RAW Folder Monitor ${{ github.ref_name }}
           
           ### 新機能・変更点
-          - 新しいリリースです
+          - JPEG/RAWファイルの自動監視・リネーム・移動機能
+          - 即座監視とポーリング監視の両モード対応
+          - プレビューアプリケーション連携
+          - 詳細ログ機能
+          - 設定の永続化
           
           ### システム要件
           - Windows 10/11 (x64)
-          - .NET 6.0 Runtime (セルフコンテインドなので不要)
+          - .NET Runtime不要（セルフコンテインド版）
           
           ### インストール方法
           1. `JPEGFolderMonitor-win-x64.zip` をダウンロード
@@ -60,18 +64,9 @@ jobs:
           3. `JPEGFolderMonitor.exe` を実行
           
           ### サポート対象ファイル
-          - JPEG: .jpg, .jpeg
-          - RAW: .cr2, .cr3, .arw, .nef, .rw2, .orf, .dng
+          - **JPEG**: .jpg, .jpeg
+          - **RAW**: .cr2, .cr3, .arw, .nef, .rw2, .orf, .dng
+        files: |
+          ./JPEGFolderMonitor-win-x64.zip
         draft: false
         prerelease: false
-
-    - name: Upload Release Asset
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./JPEGFolderMonitor-win-x64.zip
-        asset_name: JPEGFolderMonitor-win-x64.zip
-        asset_content_type: application/zip
