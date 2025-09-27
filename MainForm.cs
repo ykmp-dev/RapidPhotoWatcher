@@ -292,6 +292,46 @@ namespace JPEGFolderMonitor
             }
         }
 
+        /// <summary>
+        /// フォルダ選択（監視フォルダ）
+        /// </summary>
+        private void btnBrowseSource_Click(object sender, EventArgs e)
+        {
+            using var dialog = new FolderBrowserDialog();
+            dialog.Description = "監視するフォルダを選択してください";
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                txtSourceFolder.Text = dialog.SelectedPath;
+            }
+        }
+
+        /// <summary>
+        /// フォルダ選択（移動先フォルダ）
+        /// </summary>
+        private void btnBrowseDestination_Click(object sender, EventArgs e)
+        {
+            using var dialog = new FolderBrowserDialog();
+            dialog.Description = "移動先フォルダを選択してください";
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                txtDestinationFolder.Text = dialog.SelectedPath;
+            }
+        }
+
+        /// <summary>
+        /// ファイル選択（プレビューアプリ）
+        /// </summary>
+        private void btnBrowsePreview_Click(object sender, EventArgs e)
+        {
+            using var dialog = new OpenFileDialog();
+            dialog.Title = "プレビューアプリケーションを選択してください";
+            dialog.Filter = "実行ファイル (*.exe)|*.exe|すべてのファイル (*.*)|*.*";
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                txtPreviewApp.Text = dialog.FileName;
+            }
+        }
+
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             try

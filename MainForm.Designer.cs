@@ -424,35 +424,5 @@ namespace JPEGFolderMonitor
         private System.Windows.Forms.StatusStrip statusStrip;
         private System.Windows.Forms.ToolStripStatusLabel lblStatus;
 
-        private void btnBrowseSource_Click(object sender, System.EventArgs e)
-        {
-            using var dialog = new FolderBrowserDialog();
-            dialog.Description = "監視するフォルダを選択してください";
-            if (dialog.ShowDialog() == DialogResult.OK)
-            {
-                txtSourceFolder.Text = dialog.SelectedPath;
-            }
-        }
-
-        private void btnBrowseDestination_Click(object sender, System.EventArgs e)
-        {
-            using var dialog = new FolderBrowserDialog();
-            dialog.Description = "移動先フォルダを選択してください";
-            if (dialog.ShowDialog() == DialogResult.OK)
-            {
-                txtDestinationFolder.Text = dialog.SelectedPath;
-            }
-        }
-
-        private void btnBrowsePreview_Click(object sender, System.EventArgs e)
-        {
-            using var dialog = new OpenFileDialog();
-            dialog.Title = "プレビューアプリケーションを選択してください";
-            dialog.Filter = "実行ファイル (*.exe)|*.exe|すべてのファイル (*.*)|*.*";
-            if (dialog.ShowDialog() == DialogResult.OK)
-            {
-                txtPreviewApp.Text = dialog.FileName;
-            }
-        }
     }
 }
