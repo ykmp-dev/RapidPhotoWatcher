@@ -15,6 +15,36 @@ namespace JPEGFolderMonitor
     }
 
     /// <summary>
+    /// ファイル名プレフィックスタイプ列挙型
+    /// </summary>
+    public enum PrefixType
+    {
+        CustomText,
+        DateTime
+    }
+
+    /// <summary>
+    /// 日時フォーマットタイプ列挙型
+    /// </summary>
+    public enum DateTimeFormatType
+    {
+        YYYYMMDD,           // 20240327
+        YYYY_MM_DD,         // 2024_03_27
+        YYYY_MM_DD_Hyphen,  // 2024-03-27
+        YYYYMMDD_HHMMSS,    // 20240327_143052
+        YYYY_MM_DD_HH_MM_SS // 2024_03_27_14_30_52
+    }
+
+    /// <summary>
+    /// ソフトウェア内画像ナビゲーション方向
+    /// </summary>
+    public enum ImageNavigationDirection
+    {
+        End,    // Endキーで最下部へ移動
+        Home    // Homeキーで最上部へ移動
+    }
+
+    /// <summary>
     /// アプリケーション設定管理クラス
     /// </summary>
     public class AppSettings
@@ -36,9 +66,34 @@ namespace JPEGFolderMonitor
         public string? DestinationFolder { get; set; }
 
         /// <summary>
-        /// ファイル名接頭辞
+        /// プレフィックスタイプ
+        /// </summary>
+        public PrefixType PrefixType { get; set; } = PrefixType.CustomText;
+
+        /// <summary>
+        /// ファイル名接頭辞（カスタムテキスト）
         /// </summary>
         public string FilePrefix { get; set; } = "IMG_";
+
+        /// <summary>
+        /// 日時フォーマットタイプ
+        /// </summary>
+        public DateTimeFormatType DateTimeFormatType { get; set; } = DateTimeFormatType.YYYYMMDD;
+
+        /// <summary>
+        /// 連番の桁数
+        /// </summary>
+        public int SequenceDigits { get; set; } = 4;
+
+        /// <summary>
+        /// 連番の開始番号
+        /// </summary>
+        public int SequenceStartNumber { get; set; } = 1;
+
+        /// <summary>
+        /// 現在の連番
+        /// </summary>
+        public int CurrentSequenceNumber { get; set; } = 1;
 
         /// <summary>
         /// 監視モード
@@ -61,9 +116,19 @@ namespace JPEGFolderMonitor
         public bool MonitorRAW { get; set; } = true;
 
         /// <summary>
-        /// プレビューアプリケーションパス
+        /// 連携ソフトウェアパス（プレビューから変更）
         /// </summary>
-        public string? PreviewAppPath { get; set; }
+        public string? ExternalSoftwarePath { get; set; }
+
+        /// <summary>
+        /// 外部ソフトウェア自動アクティブ化フラグ
+        /// </summary>
+        public bool AutoActivateExternalSoftware { get; set; } = true;
+
+        /// <summary>
+        /// 画像ナビゲーション方向
+        /// </summary>
+        public ImageNavigationDirection NavigationDirection { get; set; } = ImageNavigationDirection.End;
 
         /// <summary>
         /// 設定ファイルから読み込み
@@ -72,29 +137,71 @@ namespace JPEGFolderMonitor
         {
             try
             {
+                // 設定ファイルが存在しない場合は新規作成
                 if (!File.Exists(SettingsFilePath))
                 {
+                    CreateDefaultSettingsFile();
                     return;
                 }
 
                 var jsonString = File.ReadAllText(SettingsFilePath);
-                var settings = JsonSerializer.Deserialize<AppSettings>(jsonString);
+                
+                // 空ファイルの場合はデフォルト設定で再作成
+                if (string.IsNullOrWhiteSpace(jsonString))
+                {
+                    CreateDefaultSettingsFile();
+                    return;
+                }
+
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                };
+
+                var settings = JsonSerializer.Deserialize<AppSettings>(jsonString, options);
                 
                 if (settings != null)
                 {
-                    SourceFolder = settings.SourceFolder;
-                    DestinationFolder = settings.DestinationFolder;
-                    FilePrefix = settings.FilePrefix;
+                    // 各プロパティを個別に設定（null チェック付き）
+                    SourceFolder = settings.SourceFolder ?? SourceFolder;
+                    DestinationFolder = settings.DestinationFolder ?? DestinationFolder;
+                    PrefixType = settings.PrefixType;
+                    FilePrefix = settings.FilePrefix ?? FilePrefix;
+                    DateTimeFormatType = settings.DateTimeFormatType;
+                    SequenceDigits = settings.SequenceDigits > 0 ? settings.SequenceDigits : SequenceDigits;
+                    SequenceStartNumber = settings.SequenceStartNumber > 0 ? settings.SequenceStartNumber : SequenceStartNumber;
+                    CurrentSequenceNumber = settings.CurrentSequenceNumber > 0 ? settings.CurrentSequenceNumber : CurrentSequenceNumber;
                     MonitorMode = settings.MonitorMode;
-                    PollingInterval = settings.PollingInterval;
+                    PollingInterval = settings.PollingInterval > 0 ? settings.PollingInterval : PollingInterval;
                     MonitorJPEG = settings.MonitorJPEG;
                     MonitorRAW = settings.MonitorRAW;
-                    PreviewAppPath = settings.PreviewAppPath;
+                    ExternalSoftwarePath = settings.ExternalSoftwarePath ?? ExternalSoftwarePath;
+                    AutoActivateExternalSoftware = settings.AutoActivateExternalSoftware;
+                    NavigationDirection = settings.NavigationDirection;
                 }
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"設定ファイルの読み込みに失敗しました: {ex.Message}", ex);
+                // 読み込みに失敗した場合はデフォルト設定で再作成
+                CreateDefaultSettingsFile();
+                throw new InvalidOperationException($"設定ファイルの読み込みに失敗したため、デフォルト設定を作成しました: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// デフォルト設定ファイルを作成
+        /// </summary>
+        private void CreateDefaultSettingsFile()
+        {
+            try
+            {
+                // デフォルト値はプロパティ初期化子で設定済みなので、そのまま保存
+                Save();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"デフォルト設定ファイルの作成に失敗しました: {ex.Message}", ex);
             }
         }
 
@@ -164,6 +271,40 @@ namespace JPEGFolderMonitor
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// 日時フォーマットに基づく文字列を生成
+        /// </summary>
+        public string GetDateTimePrefix(DateTime dateTime)
+        {
+            return DateTimeFormatType switch
+            {
+                DateTimeFormatType.YYYYMMDD => dateTime.ToString("yyyyMMdd"),
+                DateTimeFormatType.YYYY_MM_DD => dateTime.ToString("yyyy_MM_dd"),
+                DateTimeFormatType.YYYY_MM_DD_Hyphen => dateTime.ToString("yyyy-MM-dd"),
+                DateTimeFormatType.YYYYMMDD_HHMMSS => dateTime.ToString("yyyyMMdd_HHmmss"),
+                DateTimeFormatType.YYYY_MM_DD_HH_MM_SS => dateTime.ToString("yyyy_MM_dd_HH_mm_ss"),
+                _ => dateTime.ToString("yyyyMMdd")
+            };
+        }
+
+        /// <summary>
+        /// 連番を取得してインクリメント
+        /// </summary>
+        public string GetNextSequenceNumber()
+        {
+            var sequenceNumber = CurrentSequenceNumber.ToString().PadLeft(SequenceDigits, '0');
+            CurrentSequenceNumber++;
+            return sequenceNumber;
+        }
+
+        /// <summary>
+        /// 連番をリセット
+        /// </summary>
+        public void ResetSequenceNumber()
+        {
+            CurrentSequenceNumber = SequenceStartNumber;
         }
     }
 }

@@ -44,8 +44,6 @@ namespace JPEGFolderMonitor
     public class FileOperationService
     {
         private readonly LogManager _logManager;
-        private int _sequenceNumber = 1;
-        private readonly object _sequenceLock = new object();
 
         /// <summary>
         /// ファイル処理完了イベント
@@ -67,9 +65,9 @@ namespace JPEGFolderMonitor
         /// </summary>
         /// <param name="sourceFilePath">元ファイルパス</param>
         /// <param name="destinationFolder">移動先フォルダ</param>
-        /// <param name="prefix">ファイル名接頭辞</param>
+        /// <param name="newFileName">新しいファイル名（完全なファイル名）</param>
         /// <returns>処理結果</returns>
-        public async Task<bool> ProcessFileAsync(string sourceFilePath, string destinationFolder, string prefix)
+        public async Task<bool> ProcessFileAsync(string sourceFilePath, string destinationFolder, string newFileName)
         {
             try
             {
@@ -86,14 +84,15 @@ namespace JPEGFolderMonitor
                     _logManager.LogInfo($"移動先フォルダを作成しました: {destinationFolder}");
                 }
 
-                var newFileName = GenerateNewFileName(sourceFilePath, prefix);
                 var destinationPath = Path.Combine(destinationFolder, newFileName);
 
                 destinationPath = await EnsureUniqueFileNameAsync(destinationPath);
 
                 await Task.Run(() =>
                 {
-                    File.Move(sourceFilePath, destinationPath);
+                    // より確実な移動処理：コピー→削除
+                    File.Copy(sourceFilePath, destinationPath, false);
+                    File.Delete(sourceFilePath);
                 });
 
                 _logManager.LogInfo($"ファイル移動完了: {sourceFilePath} → {destinationPath}");
@@ -127,38 +126,6 @@ namespace JPEGFolderMonitor
             }
         }
 
-        /// <summary>
-        /// 新しいファイル名を生成
-        /// </summary>
-        /// <param name="originalFilePath">元ファイルパス</param>
-        /// <param name="prefix">接頭辞</param>
-        /// <returns>新しいファイル名</returns>
-        private string GenerateNewFileName(string originalFilePath, string prefix)
-        {
-            var extension = Path.GetExtension(originalFilePath);
-            var sequence = GetNextSequenceNumber();
-            
-            prefix = string.IsNullOrWhiteSpace(prefix) ? "IMG_" : prefix;
-            
-            if (!prefix.EndsWith("_"))
-            {
-                prefix += "_";
-            }
-
-            return $"{prefix}{sequence:D4}{extension}";
-        }
-
-        /// <summary>
-        /// 次のシーケンス番号を取得
-        /// </summary>
-        /// <returns>シーケンス番号</returns>
-        private int GetNextSequenceNumber()
-        {
-            lock (_sequenceLock)
-            {
-                return _sequenceNumber++;
-            }
-        }
 
         /// <summary>
         /// 重複しないファイル名を確保
@@ -246,16 +213,6 @@ namespace JPEGFolderMonitor
             return false;
         }
 
-        /// <summary>
-        /// シーケンス番号をリセット
-        /// </summary>
-        public void ResetSequenceNumber()
-        {
-            lock (_sequenceLock)
-            {
-                _sequenceNumber = 1;
-            }
-        }
 
         /// <summary>
         /// ファイル処理完了イベントを発火

@@ -1,6 +1,8 @@
 using System;
 using System.Drawing;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace JPEGFolderMonitor
@@ -42,12 +44,16 @@ namespace JPEGFolderMonitor
             {
                 _settings.Load();
                 ApplySettingsToUI();
+                _logManager.LogInfo("設定ファイルを読み込みました");
             }
             catch (Exception ex)
             {
                 _logManager.LogError($"設定読み込みエラー: {ex.Message}");
-                MessageBox.Show($"設定の読み込みに失敗しました: {ex.Message}", "エラー", 
+                MessageBox.Show($"設定の読み込みに失敗しました: {ex.Message}\nデフォルト設定を使用します。", "警告", 
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                
+                // デフォルト設定を適用
+                ApplySettingsToUI();
             }
         }
 
@@ -60,13 +66,29 @@ namespace JPEGFolderMonitor
             txtDestinationFolder.Text = _settings.DestinationFolder;
             txtFilePrefix.Text = _settings.FilePrefix;
             numPollingInterval.Value = _settings.PollingInterval;
-            txtPreviewApp.Text = _settings.PreviewAppPath;
+            txtExternalSoftware.Text = _settings.ExternalSoftwarePath; // 外部ソフトウェアパスに変更
             
             radioImmediate.Checked = _settings.MonitorMode == MonitorMode.Immediate;
             radioPolling.Checked = _settings.MonitorMode == MonitorMode.Polling;
             
             chkJPEG.Checked = _settings.MonitorJPEG;
             chkRAW.Checked = _settings.MonitorRAW;
+            
+            // 新しい設定項目のUI反映
+            radioPrefixCustom.Checked = _settings.PrefixType == PrefixType.CustomText;
+            radioPrefixDateTime.Checked = _settings.PrefixType == PrefixType.DateTime;
+            
+            cmbDateTimeFormat.SelectedIndex = (int)_settings.DateTimeFormatType;
+            
+            numSequenceDigits.Value = _settings.SequenceDigits;
+            numSequenceStart.Value = _settings.SequenceStartNumber;
+            
+            // 連携ソフトウェア設定
+            chkAutoActivate.Checked = _settings.AutoActivateExternalSoftware;
+            cmbNavigationDirection.SelectedIndex = (int)_settings.NavigationDirection;
+            
+            UpdatePrefixTypeUI();
+            UpdateCurrentSequenceDisplay();
         }
 
         /// <summary>
@@ -81,16 +103,7 @@ namespace JPEGFolderMonitor
 
                 SaveCurrentSettings();
                 
-                var monitorMode = radioImmediate.Checked ? MonitorMode.Immediate : MonitorMode.Polling;
-                
-                await _fileMonitorService!.StartMonitoringAsync(
-                    _settings.SourceFolder!,
-                    _settings.DestinationFolder!,
-                    _settings.FilePrefix!,
-                    monitorMode,
-                    _settings.PollingInterval,
-                    _settings.MonitorJPEG,
-                    _settings.MonitorRAW);
+                await _fileMonitorService!.StartMonitoringAsync(_settings);
 
                 SetMonitoringState(true);
                 _logManager.LogInfo("監視を開始しました");
@@ -169,10 +182,22 @@ namespace JPEGFolderMonitor
             _settings.DestinationFolder = txtDestinationFolder.Text;
             _settings.FilePrefix = txtFilePrefix.Text;
             _settings.PollingInterval = (int)numPollingInterval.Value;
-            _settings.PreviewAppPath = txtPreviewApp.Text;
+            _settings.ExternalSoftwarePath = txtExternalSoftware.Text; // 外部ソフトウェアパスに変更
             _settings.MonitorMode = radioImmediate.Checked ? MonitorMode.Immediate : MonitorMode.Polling;
             _settings.MonitorJPEG = chkJPEG.Checked;
             _settings.MonitorRAW = chkRAW.Checked;
+            
+            // 新しい設定項目
+            _settings.PrefixType = radioPrefixCustom.Checked ? PrefixType.CustomText : PrefixType.DateTime;
+            _settings.DateTimeFormatType = (DateTimeFormatType)cmbDateTimeFormat.SelectedIndex;
+            _settings.SequenceDigits = (int)numSequenceDigits.Value;
+            _settings.SequenceStartNumber = (int)numSequenceStart.Value;
+            
+            // 連携ソフトウェア設定
+            _settings.AutoActivateExternalSoftware = chkAutoActivate.Checked;
+            _settings.NavigationDirection = (ImageNavigationDirection)cmbNavigationDirection.SelectedIndex;
+            
+            _logManager.LogInfo($"設定保存: AutoActivate={_settings.AutoActivateExternalSoftware}, ExternalPath='{_settings.ExternalSoftwarePath}'");
         }
 
         /// <summary>
@@ -182,10 +207,10 @@ namespace JPEGFolderMonitor
         {
             btnStart.Enabled = !isMonitoring;
             btnStop.Enabled = isMonitoring;
+            btnExit.Enabled = !isMonitoring; // 監視停止中のみ終了可能
             
-            grpSettings.Enabled = !isMonitoring;
-            grpFileTypes.Enabled = !isMonitoring;
-            grpMonitorMode.Enabled = !isMonitoring;
+            // タブ全体を無効化/有効化
+            tabControl.Enabled = !isMonitoring;
         }
 
         /// <summary>
@@ -202,6 +227,9 @@ namespace JPEGFolderMonitor
             var message = $"{e.OriginalPath} → {e.NewPath}";
             _logManager.LogInfo($"ファイル処理完了: {message}");
             AppendLog($"[{DateTime.Now:HH:mm:ss}] {message}");
+            
+            // 連番表示を更新
+            UpdateCurrentSequenceDisplay();
         }
 
         /// <summary>
@@ -236,61 +264,7 @@ namespace JPEGFolderMonitor
             lblStatus.Text = message;
         }
 
-        /// <summary>
-        /// 設定保存
-        /// </summary>
-        private void btnSaveSettings_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                SaveCurrentSettings();
-                _settings.Save();
-                MessageBox.Show("設定を保存しました。", "情報", 
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            catch (Exception ex)
-            {
-                _logManager.LogError($"設定保存エラー: {ex.Message}");
-                MessageBox.Show($"設定の保存に失敗しました: {ex.Message}", "エラー", 
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
 
-        /// <summary>
-        /// プレビュー実行
-        /// </summary>
-        private void btnPreview_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(_settings.PreviewAppPath) || 
-                    !File.Exists(_settings.PreviewAppPath))
-                {
-                    MessageBox.Show("プレビューアプリケーションが設定されていないか、存在しません。", 
-                        "エラー", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                var previewService = new PreviewService(_settings.PreviewAppPath);
-                var files = Directory.GetFiles(_settings.SourceFolder ?? "", "*.*", SearchOption.TopDirectoryOnly);
-                
-                foreach (var file in files)
-                {
-                    var ext = Path.GetExtension(file).ToLowerInvariant();
-                    if (FileExtensions.IsJPEG(ext) || FileExtensions.IsRAW(ext))
-                    {
-                        previewService.OpenFile(file);
-                        break;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logManager.LogError($"プレビューエラー: {ex.Message}");
-                MessageBox.Show($"プレビューの実行に失敗しました: {ex.Message}", "エラー", 
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
 
         /// <summary>
         /// フォルダ選択（監視フォルダ）
@@ -319,31 +293,124 @@ namespace JPEGFolderMonitor
         }
 
         /// <summary>
-        /// ファイル選択（プレビューアプリ）
+        /// 設定変更時の処理（空の実装）
         /// </summary>
-        private void btnBrowsePreview_Click(object sender, EventArgs e)
+        private void OnSettingsChanged(object sender, EventArgs e)
+        {
+            // リアルタイム保存は行わない - 終了時のみ保存
+        }
+
+        /// <summary>
+        /// プレフィックスタイプ変更時の処理
+        /// </summary>
+        private void OnPrefixTypeChanged(object sender, EventArgs e)
+        {
+            UpdatePrefixTypeUI();
+        }
+
+        /// <summary>
+        /// プレフィックスタイプに応じてUIを更新
+        /// </summary>
+        private void UpdatePrefixTypeUI()
+        {
+            grpCustomPrefix.Enabled = radioPrefixCustom.Checked;
+            grpDateTimeFormat.Enabled = radioPrefixDateTime.Checked;
+        }
+
+        /// <summary>
+        /// 連番リセット
+        /// </summary>
+        private void btnResetSequence_Click(object sender, EventArgs e)
+        {
+            _settings.ResetSequenceNumber();
+            UpdateCurrentSequenceDisplay();
+            MessageBox.Show($"連番を{_settings.SequenceStartNumber}にリセットしました。", "情報", 
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        /// <summary>
+        /// 現在の連番を表示更新
+        /// </summary>
+        private void UpdateCurrentSequenceDisplay()
+        {
+            // 開始番号の設定値を現在の連番に更新
+            numSequenceStart.Value = _settings.CurrentSequenceNumber;
+        }
+
+        /// <summary>
+        /// 外部ソフトウェア選択
+        /// </summary>
+        private void btnBrowseExternal_Click(object sender, EventArgs e)
         {
             using var dialog = new OpenFileDialog();
-            dialog.Title = "プレビューアプリケーションを選択してください";
+            dialog.Title = "連携する外部ソフトウェアを選択してください";
             dialog.Filter = "実行ファイル (*.exe)|*.exe|すべてのファイル (*.*)|*.*";
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                txtPreviewApp.Text = dialog.FileName;
+                txtExternalSoftware.Text = dialog.FileName;
+            }
+        }
+
+
+
+        /// <summary>
+        /// ファイル選択（外部ソフトウェア） - 後方互換性
+        /// </summary>
+        private void btnBrowsePreview_Click(object sender, EventArgs e)
+        {
+            btnBrowseExternal_Click(sender, e);
+        }
+
+        /// <summary>
+        /// 終了ボタンクリック
+        /// </summary>
+        private async void btnExit_Click(object sender, EventArgs e)
+        {
+            await ExitApplicationAsync();
+        }
+
+        /// <summary>
+        /// アプリケーション終了処理
+        /// </summary>
+        private async Task ExitApplicationAsync()
+        {
+            try
+            {
+                // 監視が実行中の場合は先に停止
+                if (_fileMonitorService != null && btnStop.Enabled)
+                {
+                    _logManager.LogInfo("監視を停止しています...");
+                    await _fileMonitorService.StopMonitoringAsync();
+                }
+
+                // 全ての設定を現在のUIの状態で保存
+                SaveCurrentSettings();
+                _settings.Save();
+                _logManager.LogInfo("設定ファイルを保存しました");
+
+                // アプリケーション終了
+                _logManager.LogInfo("アプリケーションを終了します");
+                Application.Exit();
+            }
+            catch (Exception ex)
+            {
+                _logManager.LogError($"終了処理エラー: {ex.Message}");
+                // エラーが発生してもアプリケーションを強制終了
+                try
+                {
+                    _settings.Save(); // 最後の試み
+                }
+                catch
+                {
+                    // 無視
+                }
+                Application.Exit();
             }
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            try
-            {
-                _fileMonitorService?.StopMonitoringAsync().Wait();
-                _settings.Save();
-            }
-            catch (Exception ex)
-            {
-                _logManager.LogError($"終了処理エラー: {ex.Message}");
-            }
-            
+            // Xボタンを無効化しているため、このメソッドは通常呼ばれない
             base.OnFormClosing(e);
         }
     }

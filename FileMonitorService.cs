@@ -14,21 +14,21 @@ namespace JPEGFolderMonitor
     {
         private readonly LogManager _logManager;
         private readonly FileOperationService _fileOperationService;
+        private readonly ExternalSoftwareController _externalSoftwareController;
         private FileSystemWatcher? _fileSystemWatcher;
+        private FileSystemWatcher? _destinationWatcher;
         private Timer? _pollingTimer;
         private CancellationTokenSource? _cancellationTokenSource;
         
-        private string? _sourceFolder;
-        private string? _destinationFolder;
-        private string? _filePrefix;
-        private MonitorMode _monitorMode;
-        private int _pollingInterval;
-        private bool _monitorJPEG;
-        private bool _monitorRAW;
+        private AppSettings? _settings;
         private bool _isMonitoring;
 
         private readonly HashSet<string> _processedFiles = new HashSet<string>();
         private readonly object _processedFilesLock = new object();
+        
+        // 移動先フォルダの重複処理防止用
+        private readonly HashSet<string> _processingDestinationFiles = new HashSet<string>();
+        private readonly object _processingDestinationFilesLock = new object();
 
         /// <summary>
         /// ファイル処理完了イベント
@@ -44,6 +44,7 @@ namespace JPEGFolderMonitor
         {
             _logManager = logManager ?? throw new ArgumentNullException(nameof(logManager));
             _fileOperationService = new FileOperationService(_logManager);
+            _externalSoftwareController = new ExternalSoftwareController(_logManager);
             
             _fileOperationService.FileProcessed += OnFileProcessed;
             _fileOperationService.ErrorOccurred += OnErrorOccurred;
@@ -52,31 +53,18 @@ namespace JPEGFolderMonitor
         /// <summary>
         /// 監視開始
         /// </summary>
-        public async Task StartMonitoringAsync(
-            string sourceFolder,
-            string destinationFolder,
-            string filePrefix,
-            MonitorMode monitorMode,
-            int pollingInterval,
-            bool monitorJPEG,
-            bool monitorRAW)
+        public async Task StartMonitoringAsync(AppSettings settings)
         {
             if (_isMonitoring)
             {
                 throw new InvalidOperationException("既に監視が開始されています");
             }
 
-            _sourceFolder = sourceFolder ?? throw new ArgumentNullException(nameof(sourceFolder));
-            _destinationFolder = destinationFolder ?? throw new ArgumentNullException(nameof(destinationFolder));
-            _filePrefix = filePrefix ?? throw new ArgumentNullException(nameof(filePrefix));
-            _monitorMode = monitorMode;
-            _pollingInterval = pollingInterval;
-            _monitorJPEG = monitorJPEG;
-            _monitorRAW = monitorRAW;
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
 
-            if (!Directory.Exists(_sourceFolder))
+            if (!Directory.Exists(_settings.SourceFolder))
             {
-                throw new DirectoryNotFoundException($"監視フォルダが存在しません: {_sourceFolder}");
+                throw new DirectoryNotFoundException($"監視フォルダが存在しません: {_settings.SourceFolder}");
             }
 
             _cancellationTokenSource = new CancellationTokenSource();
@@ -84,7 +72,7 @@ namespace JPEGFolderMonitor
 
             ClearProcessedFiles();
 
-            switch (_monitorMode)
+            switch (_settings.MonitorMode)
             {
                 case MonitorMode.Immediate:
                     await StartImmediateMonitoringAsync();
@@ -93,10 +81,22 @@ namespace JPEGFolderMonitor
                     await StartPollingMonitoringAsync();
                     break;
                 default:
-                    throw new ArgumentException($"未サポートの監視モード: {_monitorMode}");
+                    throw new ArgumentException($"未サポートの監視モード: {_settings.MonitorMode}");
             }
 
-            _logManager.LogInfo($"ファイル監視を開始しました - モード: {_monitorMode}, フォルダ: {_sourceFolder}");
+            // 移動先フォルダの監視を開始（リアルタイムプレビュー用）
+            _logManager.LogInfo($"外部ソフトウェア設定確認 - AutoActivate: {_settings.AutoActivateExternalSoftware}, Path: '{_settings.ExternalSoftwarePath}'");
+            if (_settings.AutoActivateExternalSoftware && !string.IsNullOrEmpty(_settings.ExternalSoftwarePath))
+            {
+                _logManager.LogInfo("移動先フォルダの監視を開始します");
+                await StartDestinationFolderMonitoringAsync();
+            }
+            else
+            {
+                _logManager.LogWarning("外部ソフトウェア連携が無効です");
+            }
+
+            _logManager.LogInfo($"ファイル監視を開始しました - モード: {_settings.MonitorMode}, フォルダ: {_settings.SourceFolder}");
         }
 
         /// <summary>
@@ -116,6 +116,9 @@ namespace JPEGFolderMonitor
             _fileSystemWatcher?.Dispose();
             _fileSystemWatcher = null;
 
+            _destinationWatcher?.Dispose();
+            _destinationWatcher = null;
+
             _pollingTimer?.Dispose();
             _pollingTimer = null;
 
@@ -134,7 +137,7 @@ namespace JPEGFolderMonitor
         {
             await Task.Run(() =>
             {
-                _fileSystemWatcher = new FileSystemWatcher(_sourceFolder!)
+                _fileSystemWatcher = new FileSystemWatcher(_settings!.SourceFolder!)
                 {
                     IncludeSubdirectories = false,
                     EnableRaisingEvents = true
@@ -155,9 +158,9 @@ namespace JPEGFolderMonitor
             await Task.Run(() =>
             {
                 _pollingTimer = new Timer(async _ => await PollingCheckAsync(), 
-                    null, TimeSpan.Zero, TimeSpan.FromSeconds(_pollingInterval));
+                    null, TimeSpan.Zero, TimeSpan.FromSeconds(_settings!.PollingInterval));
 
-                _logManager.LogInfo($"ポーリング監視を開始しました - 間隔: {_pollingInterval}秒");
+                _logManager.LogInfo($"ポーリング監視を開始しました - 間隔: {_settings.PollingInterval}秒");
             });
         }
 
@@ -191,11 +194,14 @@ namespace JPEGFolderMonitor
                     return;
                 }
 
-                var success = await _fileOperationService.ProcessFileAsync(filePath, _destinationFolder!, _filePrefix!);
+                var newFileName = GenerateNewFileName(filePath);
+                _logManager.LogInfo($"リネーム処理: {Path.GetFileName(filePath)} → {newFileName}");
+                var success = await _fileOperationService.ProcessFileAsync(filePath, _settings!.DestinationFolder!, newFileName);
                 
                 if (success)
                 {
                     MarkFileAsProcessed(filePath);
+                    // 外部ソフトウェアの処理は移動先フォルダ監視で行う
                 }
             }
             catch (OperationCanceledException)
@@ -219,12 +225,12 @@ namespace JPEGFolderMonitor
                     return;
                 }
 
-                var patterns = FileExtensions.GetSearchPatterns(_monitorJPEG, _monitorRAW);
+                var patterns = FileExtensions.GetSearchPatterns(_settings!.MonitorJPEG, _settings.MonitorRAW);
                 var filesToProcess = new List<string>();
 
                 foreach (var pattern in patterns)
                 {
-                    var files = Directory.GetFiles(_sourceFolder!, pattern, SearchOption.TopDirectoryOnly);
+                    var files = Directory.GetFiles(_settings.SourceFolder!, pattern, SearchOption.TopDirectoryOnly);
                     filesToProcess.AddRange(files.Where(file => !IsFileAlreadyProcessed(file)));
                 }
 
@@ -249,7 +255,7 @@ namespace JPEGFolderMonitor
         /// </summary>
         private bool ShouldProcessFile(string filePath)
         {
-            return FileExtensions.ShouldProcessFile(filePath, _monitorJPEG, _monitorRAW);
+            return FileExtensions.ShouldProcessFile(filePath, _settings!.MonitorJPEG, _settings.MonitorRAW);
         }
 
         /// <summary>
@@ -310,11 +316,231 @@ namespace JPEGFolderMonitor
         }
 
         /// <summary>
+        /// 新しいファイル名を生成
+        /// </summary>
+        private string GenerateNewFileName(string originalFilePath)
+        {
+            var extension = Path.GetExtension(originalFilePath);
+            var fileInfo = new FileInfo(originalFilePath);
+            
+            string prefix;
+            if (_settings!.PrefixType == PrefixType.DateTime)
+            {
+                // 撮影日時またはファイル作成日時を使用
+                var dateTime = GetPhotoDateTime(originalFilePath) ?? fileInfo.CreationTime;
+                prefix = _settings.GetDateTimePrefix(dateTime);
+            }
+            else
+            {
+                prefix = _settings.FilePrefix;
+            }
+
+            var sequenceNumber = _settings.GetNextSequenceNumber();
+            return $"{prefix}{sequenceNumber}{extension}";
+        }
+
+        /// <summary>
+        /// 写真の撮影日時を取得（EXIF情報から）
+        /// </summary>
+        private DateTime? GetPhotoDateTime(string filePath)
+        {
+            try
+            {
+                // 簡単なEXIF読み取り実装
+                // 本格的な実装では専用ライブラリを使用
+                return null; // 今回は簡易実装でファイル作成日時を使用
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 移動先フォルダの監視を開始（リアルタイムプレビュー用）
+        /// </summary>
+        private async Task StartDestinationFolderMonitoringAsync()
+        {
+            try
+            {
+                await Task.Run(() =>
+                {
+                    _destinationWatcher = new FileSystemWatcher(_settings!.DestinationFolder!)
+                    {
+                        IncludeSubdirectories = false,
+                        EnableRaisingEvents = true,
+                        NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.LastWrite | NotifyFilters.FileName
+                    };
+
+                    _destinationWatcher.Created += async (sender, e) => await OnDestinationFileCreatedAsync(e.FullPath);
+                    _destinationWatcher.Changed += async (sender, e) => await OnDestinationFileCreatedAsync(e.FullPath);
+
+                    _logManager.LogInfo("移動先フォルダのリアルタイム監視を開始しました");
+                });
+            }
+            catch (Exception ex)
+            {
+                OnErrorOccurred("移動先フォルダ監視の開始に失敗しました", ex);
+            }
+        }
+
+        /// <summary>
+        /// 移動先フォルダにファイルが作成された時の処理
+        /// </summary>
+        private async Task OnDestinationFileCreatedAsync(string filePath)
+        {
+            try
+            {
+                var fileName = Path.GetFileName(filePath);
+                _logManager.LogInfo($"移動先フォルダでファイル変更イベント検出: {fileName}");
+                
+                if (_cancellationTokenSource?.Token.IsCancellationRequested == true)
+                {
+                    _logManager.LogInfo("キャンセル要求のため処理を中断");
+                    return;
+                }
+
+                // 重複処理チェック
+                lock (_processingDestinationFilesLock)
+                {
+                    if (_processingDestinationFiles.Contains(filePath))
+                    {
+                        _logManager.LogInfo($"既に処理中のファイルのためスキップ: {fileName}");
+                        return;
+                    }
+                    _processingDestinationFiles.Add(filePath);
+                }
+
+                try
+                {
+                    // 画像ファイルかチェック
+                    if (!IsImageFile(filePath))
+                    {
+                        _logManager.LogInfo($"画像ファイルではないためスキップ: {fileName}");
+                        return;
+                    }
+
+                    _logManager.LogInfo($"画像ファイルを確認、処理を開始: {fileName}");
+
+                    // ファイルが完全に書き込まれるまで少し待つ
+                    await Task.Delay(500, _cancellationTokenSource?.Token ?? CancellationToken.None);
+
+                    // ファイルがアクセス可能になるまで待つ
+                    if (!await _fileOperationService.WaitForFileAvailableAsync(filePath))
+                    {
+                        _logManager.LogWarning($"ファイルアクセス不可のため処理をスキップ: {fileName}");
+                        return;
+                    }
+
+                    await HandleNewImageInDestination(filePath);
+                }
+                finally
+                {
+                    // 処理完了後にファイルを処理中リストから削除
+                    lock (_processingDestinationFilesLock)
+                    {
+                        _processingDestinationFiles.Remove(filePath);
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                _logManager.LogInfo("移動先ファイル処理がキャンセルされました");
+            }
+            catch (Exception ex)
+            {
+                _logManager.LogError($"移動先ファイル処理エラー: {filePath}, {ex.Message}");
+                OnErrorOccurred($"移動先ファイル処理エラー: {filePath}", ex);
+            }
+        }
+
+        /// <summary>
+        /// 移動先フォルダの新しい画像を処理
+        /// </summary>
+        private Task HandleNewImageInDestination(string imagePath)
+        {
+            try
+            {
+                _logManager.LogInfo($"移動先フォルダで新しい画像を検出: {Path.GetFileName(imagePath)}");
+                
+                // UIスレッドをブロックしないよう、Task.Runで実行
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        _logManager.LogInfo($"外部ソフトウェア連携処理を開始: {Path.GetFileName(imagePath)}");
+                        
+                        // 外部ソフトウェアを起動または既存プロセスをアクティブ化し、画像位置移動を実行
+                        var success = await _externalSoftwareController.LaunchOrActivateAndNavigateAsync(
+                            _settings!.ExternalSoftwarePath!, 
+                            _settings.NavigationDirection,
+                            _settings.DestinationFolder);
+                        
+                        if (success)
+                        {
+                            _logManager.LogInfo($"移動先フォルダの画像処理完了: {Path.GetFileName(imagePath)}");
+                        }
+                        else
+                        {
+                            _logManager.LogWarning($"外部ソフトウェア連携に失敗しました: {Path.GetFileName(imagePath)}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logManager.LogError($"外部ソフトウェア連携エラー: {ex.Message}");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logManager.LogError($"画像処理エラー: {imagePath}, {ex.Message}");
+                OnErrorOccurred($"画像処理エラー: {imagePath}", ex);
+            }
+            
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// ファイルが画像ファイルかチェック
+        /// </summary>
+        private bool IsImageFile(string filePath)
+        {
+            var extension = Path.GetExtension(filePath).ToLowerInvariant();
+            var imageExtensions = new[] { ".jpg", ".jpeg", ".cr2", ".cr3", ".arw", ".nef", ".rw2", ".orf", ".dng" };
+            return imageExtensions.Contains(extension);
+        }
+
+        /// <summary>
+        /// 最新の画像ファイルを取得
+        /// </summary>
+        private string? GetLatestImageFile(string folderPath)
+        {
+            try
+            {
+                if (!Directory.Exists(folderPath))
+                    return null;
+
+                var extensions = new[] { ".jpg", ".jpeg", ".cr2", ".cr3", ".arw", ".nef", ".rw2", ".orf", ".dng" };
+                var files = Directory.GetFiles(folderPath)
+                    .Where(f => extensions.Contains(Path.GetExtension(f).ToLowerInvariant()))
+                    .OrderByDescending(f => File.GetLastWriteTime(f))
+                    .FirstOrDefault();
+
+                return files;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// リソース解放
         /// </summary>
         public void Dispose()
         {
             StopMonitoringAsync().Wait();
+            _externalSoftwareController?.Dispose();
         }
     }
 }
