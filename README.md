@@ -1,7 +1,7 @@
 # RapidPhotoWatcher v1.1.0
 
-[![CI Build](https://github.com/yubertokyo/rapidphotowatcher/actions/workflows/ci.yml/badge.svg)](https://github.com/yubertokyo/rapidphotowatcher/actions/workflows/ci.yml)
-[![Release](https://github.com/yubertokyo/rapidphotowatcher/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/yubertokyo/rapidphotowatcher/actions/workflows/build-and-release.yml)
+[![CI Build](https://github.com/yubertokyo/RapidPhotoWatcher/actions/workflows/ci.yml/badge.svg)](https://github.com/yubertokyo/RapidPhotoWatcher/actions/workflows/ci.yml)
+[![Release](https://github.com/yubertokyo/RapidPhotoWatcher/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/yubertokyo/RapidPhotoWatcher/actions/workflows/build-and-release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 写真ファイルの高速監視・自動整理を行うWindows デスクトップアプリケーションです。
@@ -54,22 +54,22 @@ FileSystemWatcherを使用したリアルタイム監視
 
 ## ダウンロード
 
-最新版は [Releases](https://github.com/yubertokyo/rapidphotowatcher/releases) からダウンロードできます。
+最新版は [Releases](https://github.com/yubertokyo/RapidPhotoWatcher/releases) からダウンロードできます。
 
 ### インストール方法
 
 #### 方法1: インストーラを使用
-1. [最新リリース](https://github.com/yubertokyo/rapidphotowatcher/releases/latest) から `RapidPhotoWatcher_v1.1.0_Setup.exe` をダウンロード
+1. [最新リリース](https://github.com/yubertokyo/RapidPhotoWatcher/releases/latest) から `RapidPhotoWatcher_v1.1.0_Setup.exe` をダウンロード
 2. インストーラを実行してウィザードに従う
 3. インストール完了後、デスクトップアイコンまたはスタートメニューから起動
 
 #### 方法2: ポータブル版
-1. [最新リリース](https://github.com/yubertokyo/rapidphotowatcher/releases/latest) から `RapidPhotoWatcher_v1.1.0_Portable.zip` をダウンロード
+1. [最新リリース](https://github.com/yubertokyo/RapidPhotoWatcher/releases/latest) から `RapidPhotoWatcher_v1.1.0_Portable.zip` をダウンロード
 2. 任意のフォルダに展開
 3. `RapidPhotoWatcher.exe` を実行
 
 #### 方法3: バッチインストーラ
-1. [最新リリース](https://github.com/yubertokyo/rapidphotowatcher/releases/latest) から `RapidPhotoWatcher_v1.1.0_Portable.zip` をダウンロード
+1. [最新リリース](https://github.com/yubertokyo/RapidPhotoWatcher/releases/latest) から `RapidPhotoWatcher_v1.1.0_Portable.zip` をダウンロード
 2. 展開後、`Installer\install.bat` を管理者権限で実行
 3. インストール完了後、スタートメニューから起動
 
