@@ -1,4 +1,4 @@
-namespace JPEGFolderMonitor
+namespace RapidPhotoWatcher
 {
     partial class MainForm
     {
@@ -43,6 +43,12 @@ namespace JPEGFolderMonitor
             this.grpDateTimeFormat = new System.Windows.Forms.GroupBox();
             this.cmbDateTimeFormat = new System.Windows.Forms.ComboBox();
             this.lblDateTimeFormat = new System.Windows.Forms.Label();
+            this.grpSeparator = new System.Windows.Forms.GroupBox();
+            this.cmbSeparatorType = new System.Windows.Forms.ComboBox();
+            this.lblSeparatorType = new System.Windows.Forms.Label();
+            this.grpPreview = new System.Windows.Forms.GroupBox();
+            this.lblFileNamePreview = new System.Windows.Forms.Label();
+            this.lblPreviewCaption = new System.Windows.Forms.Label();
             this.grpSequencing = new System.Windows.Forms.GroupBox();
             this.numSequenceStart = new System.Windows.Forms.NumericUpDown();
             this.lblSequenceStart = new System.Windows.Forms.Label();
@@ -50,13 +56,20 @@ namespace JPEGFolderMonitor
             this.lblSequenceDigits = new System.Windows.Forms.Label();
             this.btnResetSequence = new System.Windows.Forms.Button();
             this.tabExternalSoftware = new System.Windows.Forms.TabPage();
+            this.tabLog = new System.Windows.Forms.TabPage();
+            this.grpBasicControls = new System.Windows.Forms.GroupBox();
+            this.btnBasicExit = new System.Windows.Forms.Button();
+            this.btnBasicStop = new System.Windows.Forms.Button();
+            this.btnBasicStart = new System.Windows.Forms.Button();
+            this.grpExternalControls = new System.Windows.Forms.GroupBox();
+            this.btnExternalExit = new System.Windows.Forms.Button();
+            this.btnExternalStop = new System.Windows.Forms.Button();
+            this.btnExternalStart = new System.Windows.Forms.Button();
             this.btnBrowseExternal = new System.Windows.Forms.Button();
             this.txtExternalSoftware = new System.Windows.Forms.TextBox();
             this.lblExternalSoftware = new System.Windows.Forms.Label();
             this.grpSoftwareSettings = new System.Windows.Forms.GroupBox();
             this.chkAutoActivate = new System.Windows.Forms.CheckBox();
-            this.cmbNavigationDirection = new System.Windows.Forms.ComboBox();
-            this.lblNavigationDirection = new System.Windows.Forms.Label();
             this.grpControls = new System.Windows.Forms.GroupBox();
             this.btnStop = new System.Windows.Forms.Button();
             this.btnStart = new System.Windows.Forms.Button();
@@ -80,7 +93,10 @@ namespace JPEGFolderMonitor
             ((System.ComponentModel.ISupportInitialize)(this.numSequenceDigits)).BeginInit();
             this.tabExternalSoftware.SuspendLayout();
             this.grpSoftwareSettings.SuspendLayout();
+            this.grpBasicControls.SuspendLayout();
+            this.grpExternalControls.SuspendLayout();
             this.grpControls.SuspendLayout();
+            this.tabLog.SuspendLayout();
             this.grpLog.SuspendLayout();
             this.statusStrip.SuspendLayout();
             this.SuspendLayout();
@@ -91,10 +107,11 @@ namespace JPEGFolderMonitor
             this.tabControl.Controls.Add(this.tabBasicSettings);
             this.tabControl.Controls.Add(this.tabFileNaming);
             this.tabControl.Controls.Add(this.tabExternalSoftware);
+            this.tabControl.Controls.Add(this.tabLog);
             this.tabControl.Location = new System.Drawing.Point(12, 12);
             this.tabControl.Name = "tabControl";
             this.tabControl.SelectedIndex = 0;
-            this.tabControl.Size = new System.Drawing.Size(580, 280);
+            this.tabControl.Size = new System.Drawing.Size(680, 370);
             this.tabControl.TabIndex = 0;
             
             // 
@@ -109,10 +126,11 @@ namespace JPEGFolderMonitor
             this.tabBasicSettings.Controls.Add(this.lblSourceFolder);
             this.tabBasicSettings.Controls.Add(this.grpFileTypes);
             this.tabBasicSettings.Controls.Add(this.grpMonitorMode);
+            this.tabBasicSettings.Controls.Add(this.grpBasicControls);
             this.tabBasicSettings.Location = new System.Drawing.Point(4, 24);
             this.tabBasicSettings.Name = "tabBasicSettings";
             this.tabBasicSettings.Padding = new System.Windows.Forms.Padding(3);
-            this.tabBasicSettings.Size = new System.Drawing.Size(572, 252);
+            this.tabBasicSettings.Size = new System.Drawing.Size(672, 340);
             this.tabBasicSettings.TabIndex = 0;
             this.tabBasicSettings.Text = "基本設定";
             
@@ -284,11 +302,14 @@ namespace JPEGFolderMonitor
             this.tabFileNaming.Controls.Add(this.grpPrefixType);
             this.tabFileNaming.Controls.Add(this.grpCustomPrefix);
             this.tabFileNaming.Controls.Add(this.grpDateTimeFormat);
+            this.tabFileNaming.Controls.Add(this.grpSeparator);
             this.tabFileNaming.Controls.Add(this.grpSequencing);
+            this.tabFileNaming.Controls.Add(this.grpPreview);
+            this.tabFileNaming.Controls.Add(this.grpControls);
             this.tabFileNaming.Location = new System.Drawing.Point(4, 24);
             this.tabFileNaming.Name = "tabFileNaming";
             this.tabFileNaming.Padding = new System.Windows.Forms.Padding(3);
-            this.tabFileNaming.Size = new System.Drawing.Size(572, 252);
+            this.tabFileNaming.Size = new System.Drawing.Size(672, 340);
             this.tabFileNaming.TabIndex = 1;
             this.tabFileNaming.Text = "ファイル命名";
             
@@ -337,7 +358,7 @@ namespace JPEGFolderMonitor
             this.grpCustomPrefix.Controls.Add(this.lblFilePrefix);
             this.grpCustomPrefix.Location = new System.Drawing.Point(220, 10);
             this.grpCustomPrefix.Name = "grpCustomPrefix";
-            this.grpCustomPrefix.Size = new System.Drawing.Size(240, 60);
+            this.grpCustomPrefix.Size = new System.Drawing.Size(340, 60);
             this.grpCustomPrefix.TabIndex = 1;
             this.grpCustomPrefix.TabStop = false;
             this.grpCustomPrefix.Text = "カスタムプレフィックス";
@@ -370,7 +391,7 @@ namespace JPEGFolderMonitor
             this.grpDateTimeFormat.Enabled = false;
             this.grpDateTimeFormat.Location = new System.Drawing.Point(10, 80);
             this.grpDateTimeFormat.Name = "grpDateTimeFormat";
-            this.grpDateTimeFormat.Size = new System.Drawing.Size(450, 60);
+            this.grpDateTimeFormat.Size = new System.Drawing.Size(420, 60);
             this.grpDateTimeFormat.TabIndex = 2;
             this.grpDateTimeFormat.TabStop = false;
             this.grpDateTimeFormat.Text = "日時フォーマット";
@@ -398,9 +419,47 @@ namespace JPEGFolderMonitor
             "2024_11_27_14_30_52 (YYYY_MM_DD_HH_MM_SS)"});
             this.cmbDateTimeFormat.Location = new System.Drawing.Point(90, 20);
             this.cmbDateTimeFormat.Name = "cmbDateTimeFormat";
-            this.cmbDateTimeFormat.Size = new System.Drawing.Size(350, 23);
+            this.cmbDateTimeFormat.Size = new System.Drawing.Size(320, 23);
             this.cmbDateTimeFormat.TabIndex = 1;
             this.cmbDateTimeFormat.SelectedIndexChanged += new System.EventHandler(this.OnSettingsChanged);
+            
+            // 
+            // grpSeparator
+            // 
+            this.grpSeparator.Controls.Add(this.cmbSeparatorType);
+            this.grpSeparator.Controls.Add(this.lblSeparatorType);
+            this.grpSeparator.Location = new System.Drawing.Point(440, 80);
+            this.grpSeparator.Name = "grpSeparator";
+            this.grpSeparator.Size = new System.Drawing.Size(180, 60);
+            this.grpSeparator.TabIndex = 3;
+            this.grpSeparator.TabStop = false;
+            this.grpSeparator.Text = "区切り文字";
+            
+            // 
+            // lblSeparatorType
+            // 
+            this.lblSeparatorType.AutoSize = true;
+            this.lblSeparatorType.Location = new System.Drawing.Point(6, 25);
+            this.lblSeparatorType.Name = "lblSeparatorType";
+            this.lblSeparatorType.Size = new System.Drawing.Size(31, 15);
+            this.lblSeparatorType.TabIndex = 0;
+            this.lblSeparatorType.Text = "種類:";
+            
+            // 
+            // cmbSeparatorType
+            // 
+            this.cmbSeparatorType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbSeparatorType.FormattingEnabled = true;
+            this.cmbSeparatorType.Items.AddRange(new object[] {
+            "なし",
+            "_(アンダーバー)",
+            "-(ハイフン)"});
+            this.cmbSeparatorType.Location = new System.Drawing.Point(45, 22);
+            this.cmbSeparatorType.Name = "cmbSeparatorType";
+            this.cmbSeparatorType.Size = new System.Drawing.Size(120, 23);
+            this.cmbSeparatorType.TabIndex = 1;
+            this.cmbSeparatorType.SelectedIndex = 0;
+            this.cmbSeparatorType.SelectedIndexChanged += new System.EventHandler(this.OnSettingsChanged);
             
             // 
             // grpSequencing
@@ -412,8 +471,8 @@ namespace JPEGFolderMonitor
             this.grpSequencing.Controls.Add(this.lblSequenceDigits);
             this.grpSequencing.Location = new System.Drawing.Point(10, 150);
             this.grpSequencing.Name = "grpSequencing";
-            this.grpSequencing.Size = new System.Drawing.Size(450, 90);
-            this.grpSequencing.TabIndex = 3;
+            this.grpSequencing.Size = new System.Drawing.Size(650, 50);
+            this.grpSequencing.TabIndex = 4;
             this.grpSequencing.TabStop = false;
             this.grpSequencing.Text = "連番設定";
             
@@ -421,7 +480,7 @@ namespace JPEGFolderMonitor
             // lblSequenceDigits
             // 
             this.lblSequenceDigits.AutoSize = true;
-            this.lblSequenceDigits.Location = new System.Drawing.Point(10, 23);
+            this.lblSequenceDigits.Location = new System.Drawing.Point(10, 22);
             this.lblSequenceDigits.Name = "lblSequenceDigits";
             this.lblSequenceDigits.Size = new System.Drawing.Size(43, 15);
             this.lblSequenceDigits.TabIndex = 0;
@@ -430,7 +489,7 @@ namespace JPEGFolderMonitor
             // 
             // numSequenceDigits
             // 
-            this.numSequenceDigits.Location = new System.Drawing.Point(70, 20);
+            this.numSequenceDigits.Location = new System.Drawing.Point(60, 20);
             this.numSequenceDigits.Maximum = new decimal(new int[] { 10, 0, 0, 0});
             this.numSequenceDigits.Minimum = new decimal(new int[] { 1, 0, 0, 0});
             this.numSequenceDigits.Name = "numSequenceDigits";
@@ -443,7 +502,7 @@ namespace JPEGFolderMonitor
             // lblSequenceStart
             // 
             this.lblSequenceStart.AutoSize = true;
-            this.lblSequenceStart.Location = new System.Drawing.Point(160, 23);
+            this.lblSequenceStart.Location = new System.Drawing.Point(150, 22);
             this.lblSequenceStart.Name = "lblSequenceStart";
             this.lblSequenceStart.Size = new System.Drawing.Size(55, 15);
             this.lblSequenceStart.TabIndex = 2;
@@ -452,7 +511,7 @@ namespace JPEGFolderMonitor
             // 
             // numSequenceStart
             // 
-            this.numSequenceStart.Location = new System.Drawing.Point(230, 20);
+            this.numSequenceStart.Location = new System.Drawing.Point(220, 20);
             this.numSequenceStart.Maximum = new decimal(new int[] { 9999999, 0, 0, 0});
             this.numSequenceStart.Minimum = new decimal(new int[] { 1, 0, 0, 0});
             this.numSequenceStart.Name = "numSequenceStart";
@@ -464,13 +523,47 @@ namespace JPEGFolderMonitor
             // 
             // btnResetSequence
             // 
-            this.btnResetSequence.Location = new System.Drawing.Point(10, 50);
+            this.btnResetSequence.Location = new System.Drawing.Point(320, 20);
             this.btnResetSequence.Name = "btnResetSequence";
-            this.btnResetSequence.Size = new System.Drawing.Size(100, 30);
+            this.btnResetSequence.Size = new System.Drawing.Size(80, 23);
             this.btnResetSequence.TabIndex = 4;
             this.btnResetSequence.Text = "連番リセット";
             this.btnResetSequence.UseVisualStyleBackColor = true;
             this.btnResetSequence.Click += new System.EventHandler(this.btnResetSequence_Click);
+            
+            // 
+            // grpPreview
+            // 
+            this.grpPreview.Controls.Add(this.lblFileNamePreview);
+            this.grpPreview.Controls.Add(this.lblPreviewCaption);
+            this.grpPreview.Location = new System.Drawing.Point(10, 210);
+            this.grpPreview.Name = "grpPreview";
+            this.grpPreview.Size = new System.Drawing.Size(650, 50);
+            this.grpPreview.TabIndex = 5;
+            this.grpPreview.TabStop = false;
+            this.grpPreview.Text = "プレビュー";
+            
+            // 
+            // lblPreviewCaption
+            // 
+            this.lblPreviewCaption.AutoSize = true;
+            this.lblPreviewCaption.Location = new System.Drawing.Point(10, 20);
+            this.lblPreviewCaption.Name = "lblPreviewCaption";
+            this.lblPreviewCaption.Size = new System.Drawing.Size(67, 15);
+            this.lblPreviewCaption.TabIndex = 0;
+            this.lblPreviewCaption.Text = "ファイル名例:";
+            
+            // 
+            // lblFileNamePreview
+            // 
+            this.lblFileNamePreview.AutoSize = true;
+            this.lblFileNamePreview.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.lblFileNamePreview.ForeColor = System.Drawing.Color.Blue;
+            this.lblFileNamePreview.Location = new System.Drawing.Point(100, 20);
+            this.lblFileNamePreview.Name = "lblFileNamePreview";
+            this.lblFileNamePreview.Size = new System.Drawing.Size(108, 19);
+            this.lblFileNamePreview.TabIndex = 1;
+            this.lblFileNamePreview.Text = "IMG_0001.jpg";
             
             // 
             // tabExternalSoftware
@@ -480,10 +573,11 @@ namespace JPEGFolderMonitor
             this.tabExternalSoftware.Controls.Add(this.btnBrowseExternal);
             this.tabExternalSoftware.Controls.Add(this.txtExternalSoftware);
             this.tabExternalSoftware.Controls.Add(this.lblExternalSoftware);
+            this.tabExternalSoftware.Controls.Add(this.grpExternalControls);
             this.tabExternalSoftware.Location = new System.Drawing.Point(4, 24);
             this.tabExternalSoftware.Name = "tabExternalSoftware";
             this.tabExternalSoftware.Padding = new System.Windows.Forms.Padding(3);
-            this.tabExternalSoftware.Size = new System.Drawing.Size(572, 252);
+            this.tabExternalSoftware.Size = new System.Drawing.Size(672, 340);
             this.tabExternalSoftware.TabIndex = 2;
             this.tabExternalSoftware.Text = "連携ソフトウェア";
             
@@ -521,8 +615,6 @@ namespace JPEGFolderMonitor
             // 
             // grpSoftwareSettings
             // 
-            this.grpSoftwareSettings.Controls.Add(this.cmbNavigationDirection);
-            this.grpSoftwareSettings.Controls.Add(this.lblNavigationDirection);
             this.grpSoftwareSettings.Controls.Add(this.chkAutoActivate);
             this.grpSoftwareSettings.Location = new System.Drawing.Point(10, 100);
             this.grpSoftwareSettings.Name = "grpSoftwareSettings";
@@ -546,29 +638,16 @@ namespace JPEGFolderMonitor
             this.chkAutoActivate.CheckedChanged += new System.EventHandler(this.OnSettingsChanged);
             
             // 
-            // lblNavigationDirection
+            // tabLog
             // 
-            this.lblNavigationDirection.AutoSize = true;
-            this.lblNavigationDirection.Location = new System.Drawing.Point(10, 55);
-            this.lblNavigationDirection.Name = "lblNavigationDirection";
-            this.lblNavigationDirection.Size = new System.Drawing.Size(91, 15);
-            this.lblNavigationDirection.TabIndex = 1;
-            this.lblNavigationDirection.Text = "画像位置移動方式:";
-            
-            // 
-            // cmbNavigationDirection
-            // 
-            this.cmbNavigationDirection.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbNavigationDirection.FormattingEnabled = true;
-            this.cmbNavigationDirection.Items.AddRange(new object[] {
-            "Endキーで最下部へ移動",
-            "Homeキーで最上部へ移動"});
-            this.cmbNavigationDirection.Location = new System.Drawing.Point(120, 52);
-            this.cmbNavigationDirection.Name = "cmbNavigationDirection";
-            this.cmbNavigationDirection.Size = new System.Drawing.Size(250, 23);
-            this.cmbNavigationDirection.TabIndex = 2;
-            this.cmbNavigationDirection.SelectedIndex = 0;
-            this.cmbNavigationDirection.SelectedIndexChanged += new System.EventHandler(this.OnSettingsChanged);
+            this.tabLog.BackColor = System.Drawing.SystemColors.Control;
+            this.tabLog.Controls.Add(this.grpLog);
+            this.tabLog.Location = new System.Drawing.Point(4, 24);
+            this.tabLog.Name = "tabLog";
+            this.tabLog.Padding = new System.Windows.Forms.Padding(3);
+            this.tabLog.Size = new System.Drawing.Size(672, 340);
+            this.tabLog.TabIndex = 3;
+            this.tabLog.Text = "ログ";
             
             // 
             // grpControls
@@ -576,7 +655,7 @@ namespace JPEGFolderMonitor
             this.grpControls.Controls.Add(this.btnExit);
             this.grpControls.Controls.Add(this.btnStop);
             this.grpControls.Controls.Add(this.btnStart);
-            this.grpControls.Location = new System.Drawing.Point(12, 300);
+            this.grpControls.Location = new System.Drawing.Point(10, 270);
             this.grpControls.Name = "grpControls";
             this.grpControls.Size = new System.Drawing.Size(250, 60);
             this.grpControls.TabIndex = 1;
@@ -621,10 +700,11 @@ namespace JPEGFolderMonitor
             // grpLog
             // 
             this.grpLog.Controls.Add(this.txtLog);
-            this.grpLog.Location = new System.Drawing.Point(270, 300);
+            this.grpLog.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.grpLog.Location = new System.Drawing.Point(3, 3);
             this.grpLog.Name = "grpLog";
-            this.grpLog.Size = new System.Drawing.Size(320, 120);
-            this.grpLog.TabIndex = 2;
+            this.grpLog.Size = new System.Drawing.Size(666, 334);
+            this.grpLog.TabIndex = 0;
             this.grpLog.TabStop = false;
             this.grpLog.Text = "ログ";
             
@@ -632,12 +712,14 @@ namespace JPEGFolderMonitor
             // txtLog
             // 
             this.txtLog.BackColor = System.Drawing.SystemColors.Window;
-            this.txtLog.Location = new System.Drawing.Point(10, 20);
+            this.txtLog.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtLog.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.txtLog.Location = new System.Drawing.Point(3, 19);
             this.txtLog.Multiline = true;
             this.txtLog.Name = "txtLog";
             this.txtLog.ReadOnly = true;
             this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtLog.Size = new System.Drawing.Size(300, 90);
+            this.txtLog.Size = new System.Drawing.Size(660, 312);
             this.txtLog.TabIndex = 0;
             
             // 
@@ -645,9 +727,9 @@ namespace JPEGFolderMonitor
             // 
             this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.lblStatus});
-            this.statusStrip.Location = new System.Drawing.Point(0, 430);
+            this.statusStrip.Location = new System.Drawing.Point(0, 388);
             this.statusStrip.Name = "statusStrip";
-            this.statusStrip.Size = new System.Drawing.Size(604, 22);
+            this.statusStrip.Size = new System.Drawing.Size(704, 22);
             this.statusStrip.TabIndex = 3;
             this.statusStrip.Text = "statusStrip1";
             
@@ -661,19 +743,18 @@ namespace JPEGFolderMonitor
             // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(604, 452);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            this.ClientSize = new System.Drawing.Size(704, 410);
             this.Controls.Add(this.statusStrip);
-            this.Controls.Add(this.grpLog);
-            this.Controls.Add(this.grpControls);
             this.Controls.Add(this.tabControl);
+            this.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.ControlBox = false;
             this.Name = "MainForm";
-            this.Text = "JPEG/RAW フォルダ監視";
+            this.Text = "RapidPhotoWatcher";
             
             this.tabControl.ResumeLayout(false);
             this.tabBasicSettings.ResumeLayout(false);
@@ -699,12 +780,109 @@ namespace JPEGFolderMonitor
             this.grpSoftwareSettings.ResumeLayout(false);
             this.grpSoftwareSettings.PerformLayout();
             this.grpControls.ResumeLayout(false);
+            this.tabLog.ResumeLayout(false);
             this.grpLog.ResumeLayout(false);
             this.grpLog.PerformLayout();
+            this.grpBasicControls.ResumeLayout(false);
+            this.grpExternalControls.ResumeLayout(false);
             this.statusStrip.ResumeLayout(false);
             this.statusStrip.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
+            
+            // 
+            // grpBasicControls
+            // 
+            this.grpBasicControls.Controls.Add(this.btnBasicExit);
+            this.grpBasicControls.Controls.Add(this.btnBasicStop);
+            this.grpBasicControls.Controls.Add(this.btnBasicStart);
+            this.grpBasicControls.Location = new System.Drawing.Point(10, 270);
+            this.grpBasicControls.Name = "grpBasicControls";
+            this.grpBasicControls.Size = new System.Drawing.Size(250, 60);
+            this.grpBasicControls.TabIndex = 8;
+            this.grpBasicControls.TabStop = false;
+            this.grpBasicControls.Text = "操作";
+            
+            // 
+            // btnBasicStart
+            // 
+            this.btnBasicStart.Location = new System.Drawing.Point(10, 21);
+            this.btnBasicStart.Name = "btnBasicStart";
+            this.btnBasicStart.Size = new System.Drawing.Size(70, 30);
+            this.btnBasicStart.TabIndex = 0;
+            this.btnBasicStart.Text = "開始";
+            this.btnBasicStart.UseVisualStyleBackColor = true;
+            this.btnBasicStart.Click += new System.EventHandler(this.btnStart_Click);
+            
+            // 
+            // btnBasicStop
+            // 
+            this.btnBasicStop.Enabled = false;
+            this.btnBasicStop.Location = new System.Drawing.Point(90, 21);
+            this.btnBasicStop.Name = "btnBasicStop";
+            this.btnBasicStop.Size = new System.Drawing.Size(70, 30);
+            this.btnBasicStop.TabIndex = 1;
+            this.btnBasicStop.Text = "停止";
+            this.btnBasicStop.UseVisualStyleBackColor = true;
+            this.btnBasicStop.Click += new System.EventHandler(this.btnStop_Click);
+            
+            // 
+            // btnBasicExit
+            // 
+            this.btnBasicExit.Location = new System.Drawing.Point(170, 21);
+            this.btnBasicExit.Name = "btnBasicExit";
+            this.btnBasicExit.Size = new System.Drawing.Size(70, 30);
+            this.btnBasicExit.TabIndex = 2;
+            this.btnBasicExit.Text = "終了";
+            this.btnBasicExit.UseVisualStyleBackColor = true;
+            this.btnBasicExit.Click += new System.EventHandler(this.btnExit_Click);
+            
+            // 
+            // grpExternalControls
+            // 
+            this.grpExternalControls.Controls.Add(this.btnExternalExit);
+            this.grpExternalControls.Controls.Add(this.btnExternalStop);
+            this.grpExternalControls.Controls.Add(this.btnExternalStart);
+            this.grpExternalControls.Location = new System.Drawing.Point(10, 270);
+            this.grpExternalControls.Name = "grpExternalControls";
+            this.grpExternalControls.Size = new System.Drawing.Size(250, 60);
+            this.grpExternalControls.TabIndex = 5;
+            this.grpExternalControls.TabStop = false;
+            this.grpExternalControls.Text = "操作";
+            
+            // 
+            // btnExternalStart
+            // 
+            this.btnExternalStart.Location = new System.Drawing.Point(10, 21);
+            this.btnExternalStart.Name = "btnExternalStart";
+            this.btnExternalStart.Size = new System.Drawing.Size(70, 30);
+            this.btnExternalStart.TabIndex = 0;
+            this.btnExternalStart.Text = "開始";
+            this.btnExternalStart.UseVisualStyleBackColor = true;
+            this.btnExternalStart.Click += new System.EventHandler(this.btnStart_Click);
+            
+            // 
+            // btnExternalStop
+            // 
+            this.btnExternalStop.Enabled = false;
+            this.btnExternalStop.Location = new System.Drawing.Point(90, 21);
+            this.btnExternalStop.Name = "btnExternalStop";
+            this.btnExternalStop.Size = new System.Drawing.Size(70, 30);
+            this.btnExternalStop.TabIndex = 1;
+            this.btnExternalStop.Text = "停止";
+            this.btnExternalStop.UseVisualStyleBackColor = true;
+            this.btnExternalStop.Click += new System.EventHandler(this.btnStop_Click);
+            
+            // 
+            // btnExternalExit
+            // 
+            this.btnExternalExit.Location = new System.Drawing.Point(170, 21);
+            this.btnExternalExit.Name = "btnExternalExit";
+            this.btnExternalExit.Size = new System.Drawing.Size(70, 30);
+            this.btnExternalExit.TabIndex = 2;
+            this.btnExternalExit.Text = "終了";
+            this.btnExternalExit.UseVisualStyleBackColor = true;
+            this.btnExternalExit.Click += new System.EventHandler(this.btnExit_Click);
         }
 
         #endregion
@@ -713,6 +891,7 @@ namespace JPEGFolderMonitor
         private System.Windows.Forms.TabPage tabBasicSettings;
         private System.Windows.Forms.TabPage tabFileNaming;
         private System.Windows.Forms.TabPage tabExternalSoftware;
+        private System.Windows.Forms.TabPage tabLog;
         
         // Basic Settings Tab
         private System.Windows.Forms.Button btnBrowseDestination;
@@ -746,6 +925,12 @@ namespace JPEGFolderMonitor
         private System.Windows.Forms.NumericUpDown numSequenceDigits;
         private System.Windows.Forms.Label lblSequenceDigits;
         private System.Windows.Forms.Button btnResetSequence;
+        private System.Windows.Forms.GroupBox grpSeparator;
+        private System.Windows.Forms.ComboBox cmbSeparatorType;
+        private System.Windows.Forms.Label lblSeparatorType;
+        private System.Windows.Forms.GroupBox grpPreview;
+        private System.Windows.Forms.Label lblFileNamePreview;
+        private System.Windows.Forms.Label lblPreviewCaption;
         
         // External Software Tab
         private System.Windows.Forms.Button btnBrowseExternal;
@@ -753,14 +938,24 @@ namespace JPEGFolderMonitor
         private System.Windows.Forms.Label lblExternalSoftware;
         private System.Windows.Forms.GroupBox grpSoftwareSettings;
         private System.Windows.Forms.CheckBox chkAutoActivate;
-        private System.Windows.Forms.ComboBox cmbNavigationDirection;
-        private System.Windows.Forms.Label lblNavigationDirection;
         
         // Control and Log areas
         private System.Windows.Forms.GroupBox grpControls;
         private System.Windows.Forms.Button btnStop;
         private System.Windows.Forms.Button btnStart;
         private System.Windows.Forms.Button btnExit;
+        
+        // Basic Settings Controls
+        private System.Windows.Forms.GroupBox grpBasicControls;
+        private System.Windows.Forms.Button btnBasicStop;
+        private System.Windows.Forms.Button btnBasicStart;
+        private System.Windows.Forms.Button btnBasicExit;
+        
+        // External Software Controls
+        private System.Windows.Forms.GroupBox grpExternalControls;
+        private System.Windows.Forms.Button btnExternalStop;
+        private System.Windows.Forms.Button btnExternalStart;
+        private System.Windows.Forms.Button btnExternalExit;
         private System.Windows.Forms.GroupBox grpLog;
         private System.Windows.Forms.TextBox txtLog;
         private System.Windows.Forms.StatusStrip statusStrip;

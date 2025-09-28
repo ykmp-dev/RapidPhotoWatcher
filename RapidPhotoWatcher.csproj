@@ -15,18 +15,28 @@
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     
     <!-- Application Information -->
-    <AssemblyTitle>JPEG/RAW Folder Monitor</AssemblyTitle>
-    <AssemblyDescription>JPEG/RAWファイルの自動監視・リネーム・移動アプリケーション</AssemblyDescription>
+    <AssemblyTitle>RapidPhotoWatcher</AssemblyTitle>
+    <AssemblyDescription>写真ファイルの高速監視・自動整理アプリケーション</AssemblyDescription>
     <AssemblyCompany>YuberTokyo</AssemblyCompany>
-    <AssemblyProduct>JPEG/RAW Folder Monitor</AssemblyProduct>
+    <AssemblyProduct>RapidPhotoWatcher</AssemblyProduct>
     <AssemblyCopyright>Copyright © 2024 YuberTokyo</AssemblyCopyright>
     <AssemblyVersion>1.1.0.0</AssemblyVersion>
     <FileVersion>1.1.0.0</FileVersion>
     <Version>1.1.0</Version>
+    
+    <!-- Icon Settings -->
+    <ApplicationIcon>app_icon.ico</ApplicationIcon>
+    <AssemblyName>RapidPhotoWatcher</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="app_icon.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

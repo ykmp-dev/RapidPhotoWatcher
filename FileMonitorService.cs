@@ -5,8 +5,23 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace JPEGFolderMonitor
+namespace RapidPhotoWatcher
 {
+    /// <summary>
+    /// ペア処理待ちのファイルグループ
+    /// </summary>
+    internal class PendingFileGroup
+    {
+        public string BaseName { get; set; } = string.Empty;
+        public string? JpegFile { get; set; }
+        public string? RawFile { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public string SequenceNumber { get; set; } = string.Empty;
+        
+        public bool IsComplete => !string.IsNullOrEmpty(JpegFile) && !string.IsNullOrEmpty(RawFile);
+        public bool HasJpeg => !string.IsNullOrEmpty(JpegFile);
+        public bool HasRaw => !string.IsNullOrEmpty(RawFile);
+    }
     /// <summary>
     /// ファイル監視サービスクラス
     /// </summary>
@@ -14,7 +29,7 @@ namespace JPEGFolderMonitor
     {
         private readonly LogManager _logManager;
         private readonly FileOperationService _fileOperationService;
-        private readonly ExternalSoftwareController _externalSoftwareController;
+        private PreviewService? _previewService;
         private FileSystemWatcher? _fileSystemWatcher;
         private FileSystemWatcher? _destinationWatcher;
         private Timer? _pollingTimer;
@@ -25,6 +40,10 @@ namespace JPEGFolderMonitor
 
         private readonly HashSet<string> _processedFiles = new HashSet<string>();
         private readonly object _processedFilesLock = new object();
+        
+        // JPEG+RAWファイルのペア処理用
+        private readonly Dictionary<string, PendingFileGroup> _pendingFileGroups = new Dictionary<string, PendingFileGroup>();
+        private readonly object _pendingFileGroupsLock = new object();
         
         // 移動先フォルダの重複処理防止用
         private readonly HashSet<string> _processingDestinationFiles = new HashSet<string>();
@@ -44,7 +63,6 @@ namespace JPEGFolderMonitor
         {
             _logManager = logManager ?? throw new ArgumentNullException(nameof(logManager));
             _fileOperationService = new FileOperationService(_logManager);
-            _externalSoftwareController = new ExternalSoftwareController(_logManager);
             
             _fileOperationService.FileProcessed += OnFileProcessed;
             _fileOperationService.ErrorOccurred += OnErrorOccurred;
@@ -84,12 +102,24 @@ namespace JPEGFolderMonitor
                     throw new ArgumentException($"未サポートの監視モード: {_settings.MonitorMode}");
             }
 
-            // 移動先フォルダの監視を開始（リアルタイムプレビュー用）
-            _logManager.LogInfo($"外部ソフトウェア設定確認 - AutoActivate: {_settings.AutoActivateExternalSoftware}, Path: '{_settings.ExternalSoftwarePath}'");
+
+            // プレビューサービスの初期化
             if (_settings.AutoActivateExternalSoftware && !string.IsNullOrEmpty(_settings.ExternalSoftwarePath))
             {
-                _logManager.LogInfo("移動先フォルダの監視を開始します");
-                await StartDestinationFolderMonitoringAsync();
+                try
+                {
+                    _previewService = new PreviewService(_settings.ExternalSoftwarePath);
+                    _logManager.LogInfo($"プレビューサービスを初期化しました: {_settings.ExternalSoftwarePath}");
+                    
+                    // 移動先フォルダの監視を開始（プレビュー表示用）
+                    _logManager.LogInfo("移動先フォルダの監視を開始します");
+                    await StartDestinationFolderMonitoringAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logManager.LogError($"プレビューサービスの初期化に失敗しました: {ex.Message}");
+                    _previewService = null;
+                }
             }
             else
             {
@@ -126,6 +156,9 @@ namespace JPEGFolderMonitor
             _cancellationTokenSource = null;
 
             await Task.Delay(100);
+
+            // 監視停止時のファイル削除処理
+            await PerformStopTimeCleanupAsync();
 
             _logManager.LogInfo("ファイル監視を停止しました");
         }
@@ -194,14 +227,15 @@ namespace JPEGFolderMonitor
                     return;
                 }
 
-                var newFileName = GenerateNewFileName(filePath);
-                _logManager.LogInfo($"リネーム処理: {Path.GetFileName(filePath)} → {newFileName}");
-                var success = await _fileOperationService.ProcessFileAsync(filePath, _settings!.DestinationFolder!, newFileName);
-                
-                if (success)
+                // JPEG+RAW両方を監視している場合はペア処理を試行
+                if (_settings!.MonitorJPEG && _settings.MonitorRAW)
                 {
-                    MarkFileAsProcessed(filePath);
-                    // 外部ソフトウェアの処理は移動先フォルダ監視で行う
+                    await ProcessFileWithPairingAsync(filePath);
+                }
+                else
+                {
+                    // 単体ファイル処理
+                    await ProcessSingleFileAsync(filePath);
                 }
             }
             catch (OperationCanceledException)
@@ -320,6 +354,15 @@ namespace JPEGFolderMonitor
         /// </summary>
         private string GenerateNewFileName(string originalFilePath)
         {
+            var sequenceNumber = _settings!.GetNextSequenceNumber();
+            return GenerateNewFileNameWithSequence(originalFilePath, sequenceNumber);
+        }
+
+        /// <summary>
+        /// 指定された連番で新しいファイル名を生成
+        /// </summary>
+        private string GenerateNewFileNameWithSequence(string originalFilePath, string sequenceNumber)
+        {
             var extension = Path.GetExtension(originalFilePath);
             var fileInfo = new FileInfo(originalFilePath);
             
@@ -335,8 +378,8 @@ namespace JPEGFolderMonitor
                 prefix = _settings.FilePrefix;
             }
 
-            var sequenceNumber = _settings.GetNextSequenceNumber();
-            return $"{prefix}{sequenceNumber}{extension}";
+            var separator = _settings.GetSeparator();
+            return $"{prefix}{separator}{sequenceNumber}{extension}";
         }
 
         /// <summary>
@@ -463,33 +506,33 @@ namespace JPEGFolderMonitor
             {
                 _logManager.LogInfo($"移動先フォルダで新しい画像を検出: {Path.GetFileName(imagePath)}");
                 
-                // UIスレッドをブロックしないよう、Task.Runで実行
-                _ = Task.Run(async () =>
+                if (_previewService != null)
                 {
-                    try
+                    // UIスレッドをブロックしないよう、Task.Runで実行
+                    _ = Task.Run(() =>
                     {
-                        _logManager.LogInfo($"外部ソフトウェア連携処理を開始: {Path.GetFileName(imagePath)}");
-                        
-                        // 外部ソフトウェアを起動または既存プロセスをアクティブ化し、画像位置移動を実行
-                        var success = await _externalSoftwareController.LaunchOrActivateAndNavigateAsync(
-                            _settings!.ExternalSoftwarePath!, 
-                            _settings.NavigationDirection,
-                            _settings.DestinationFolder);
-                        
-                        if (success)
+                        try
                         {
-                            _logManager.LogInfo($"移動先フォルダの画像処理完了: {Path.GetFileName(imagePath)}");
+                            _logManager.LogInfo($"プレビュー表示処理を開始: {Path.GetFileName(imagePath)}");
+                            
+                            // プレビューアプリで画像を開く
+                            var success = _previewService.OpenFile(imagePath);
+                            
+                            if (success)
+                            {
+                                _logManager.LogInfo($"プレビュー表示完了: {Path.GetFileName(imagePath)}");
+                            }
+                            else
+                            {
+                                _logManager.LogWarning($"プレビュー表示に失敗しました: {Path.GetFileName(imagePath)}");
+                            }
                         }
-                        else
+                        catch (Exception ex)
                         {
-                            _logManager.LogWarning($"外部ソフトウェア連携に失敗しました: {Path.GetFileName(imagePath)}");
+                            _logManager.LogError($"プレビュー表示エラー: {ex.Message}");
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logManager.LogError($"外部ソフトウェア連携エラー: {ex.Message}");
-                    }
-                });
+                    });
+                }
             }
             catch (Exception ex)
             {
@@ -535,12 +578,233 @@ namespace JPEGFolderMonitor
         }
 
         /// <summary>
+        /// 監視停止時のクリーンアップ処理
+        /// </summary>
+        private async Task PerformStopTimeCleanupAsync()
+        {
+            try
+            {
+                if (_settings!.AutoDeleteRawFiles && _settings.MonitorJPEG && !_settings.MonitorRAW)
+                {
+                    _logManager.LogInfo("JPEGのみ監視のため、RAWファイル削除処理を実行します");
+                    await DeleteUnmonitoredFilesAsync("RAW");
+                }
+                else if (_settings.AutoDeleteJpegFiles && !_settings.MonitorJPEG && _settings.MonitorRAW)
+                {
+                    _logManager.LogInfo("RAWのみ監視のため、JPEGファイル削除処理を実行します");
+                    await DeleteUnmonitoredFilesAsync("JPEG");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logManager.LogError($"停止時クリーンアップエラー: {ex.Message}");
+                OnErrorOccurred("停止時クリーンアップエラー", ex);
+            }
+        }
+
+        /// <summary>
+        /// 監視対象外ファイルを削除
+        /// </summary>
+        private async Task DeleteUnmonitoredFilesAsync(string fileType)
+        {
+            try
+            {
+                if (!Directory.Exists(_settings!.SourceFolder))
+                {
+                    return;
+                }
+
+                var deletedCount = 0;
+                var extensions = fileType == "RAW" ? FileExtensions.GetRawExtensions() : new[] { "jpg", "jpeg" };
+
+                await Task.Run(() =>
+                {
+                    foreach (var extension in extensions)
+                    {
+                        var pattern = $"*.{extension}";
+                        var files = Directory.GetFiles(_settings.SourceFolder, pattern, SearchOption.TopDirectoryOnly);
+
+                        foreach (var file in files)
+                        {
+                            try
+                            {
+                                File.Delete(file);
+                                deletedCount++;
+                                _logManager.LogInfo($"{fileType}ファイルを削除しました: {Path.GetFileName(file)}");
+                            }
+                            catch (Exception ex)
+                            {
+                                _logManager.LogError($"{fileType}ファイル削除エラー: {Path.GetFileName(file)}, {ex.Message}");
+                            }
+                        }
+                    }
+                });
+
+                _logManager.LogInfo($"{fileType}ファイル削除処理完了: {deletedCount}個のファイルを削除しました");
+            }
+            catch (Exception ex)
+            {
+                _logManager.LogError($"{fileType}ファイル削除処理エラー: {ex.Message}");
+                OnErrorOccurred($"{fileType}ファイル削除処理エラー", ex);
+            }
+        }
+
+        /// <summary>
+        /// ペア処理でファイルを処理
+        /// </summary>
+        private Task ProcessFileWithPairingAsync(string filePath)
+        {
+            var baseName = GetFileBaseName(filePath);
+            var isJpeg = FileExtensions.IsJPEGFile(filePath);
+            var isRaw = FileExtensions.IsRAWFile(filePath);
+
+            lock (_pendingFileGroupsLock)
+            {
+                if (!_pendingFileGroups.TryGetValue(baseName, out var group))
+                {
+                    // 新しいグループを作成
+                    group = new PendingFileGroup
+                    {
+                        BaseName = baseName,
+                        SequenceNumber = _settings!.GetNextSequenceNumber()
+                    };
+                    _pendingFileGroups[baseName] = group;
+                }
+
+                // ファイルをグループに追加
+                if (isJpeg)
+                {
+                    group.JpegFile = filePath;
+                }
+                else if (isRaw)
+                {
+                    group.RawFile = filePath;
+                }
+
+                // ペアが完成した場合は処理実行
+                if (group.IsComplete)
+                {
+                    _pendingFileGroups.Remove(baseName);
+                    _ = Task.Run(() => ProcessFileGroupAsync(group));
+                }
+                else
+                {
+                    // 単体ファイルの場合は即座に処理（タイムアウト処理はCleanupTimeoutGroupsで実行）
+                    _ = Task.Run(async () =>
+                    {
+                        await Task.Delay(5000); // 5秒待機
+                        lock (_pendingFileGroupsLock)
+                        {
+                            if (_pendingFileGroups.TryGetValue(baseName, out var timeoutGroup))
+                            {
+                                _pendingFileGroups.Remove(baseName);
+                                _ = Task.Run(() => ProcessFileGroupAsync(timeoutGroup));
+                            }
+                        }
+                    });
+                }
+            }
+            
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// ファイルグループを処理
+        /// </summary>
+        private async Task ProcessFileGroupAsync(PendingFileGroup group)
+        {
+            try
+            {
+                if (group.HasJpeg && _settings!.MonitorJPEG)
+                {
+                    await ProcessSingleFileWithSequenceAsync(group.JpegFile!, group.SequenceNumber);
+                }
+
+                if (group.HasRaw && _settings!.MonitorRAW)
+                {
+                    await ProcessSingleFileWithSequenceAsync(group.RawFile!, group.SequenceNumber);
+                }
+
+                _logManager.LogInfo($"ファイルグループ処理完了: {group.BaseName} (連番: {group.SequenceNumber})");
+            }
+            catch (Exception ex)
+            {
+                _logManager.LogError($"ファイルグループ処理エラー: {group.BaseName}, {ex.Message}");
+                OnErrorOccurred($"ファイルグループ処理エラー: {group.BaseName}", ex);
+            }
+        }
+
+        /// <summary>
+        /// 単体ファイルを処理
+        /// </summary>
+        private async Task ProcessSingleFileAsync(string filePath)
+        {
+            var sequenceNumber = _settings!.GetNextSequenceNumber();
+            await ProcessSingleFileWithSequenceAsync(filePath, sequenceNumber);
+        }
+
+        /// <summary>
+        /// 指定された連番でファイルを処理
+        /// </summary>
+        private async Task ProcessSingleFileWithSequenceAsync(string filePath, string sequenceNumber)
+        {
+            var newFileName = GenerateNewFileNameWithSequence(filePath, sequenceNumber);
+            _logManager.LogInfo($"リネーム処理: {Path.GetFileName(filePath)} → {newFileName}");
+            var success = await _fileOperationService.ProcessFileAsync(filePath, _settings!.DestinationFolder!, newFileName);
+            
+            if (success)
+            {
+                MarkFileAsProcessed(filePath);
+            }
+        }
+
+        /// <summary>
+        /// ファイルのベース名を取得（拡張子を除いた部分）
+        /// </summary>
+        private string GetFileBaseName(string filePath)
+        {
+            return Path.GetFileNameWithoutExtension(filePath);
+        }
+
+        /// <summary>
+        /// ペア処理のタイムアウトファイルをクリーンアップ
+        /// </summary>
+        private void CleanupTimeoutGroups()
+        {
+            lock (_pendingFileGroupsLock)
+            {
+                var timeout = TimeSpan.FromMinutes(2); // 2分でタイムアウト
+                var expiredKeys = _pendingFileGroups
+                    .Where(kvp => DateTime.Now - kvp.Value.CreatedAt > timeout)
+                    .Select(kvp => kvp.Key)
+                    .ToList();
+
+                foreach (var key in expiredKeys)
+                {
+                    var group = _pendingFileGroups[key];
+                    _logManager.LogWarning($"ペア処理タイムアウト: {group.BaseName}");
+                    
+                    // タイムアウトしたファイルを個別処理
+                    if (group.HasJpeg && _settings!.MonitorJPEG)
+                    {
+                        _ = Task.Run(() => ProcessSingleFileAsync(group.JpegFile!));
+                    }
+                    if (group.HasRaw && _settings!.MonitorRAW)
+                    {
+                        _ = Task.Run(() => ProcessSingleFileAsync(group.RawFile!));
+                    }
+                    
+                    _pendingFileGroups.Remove(key);
+                }
+            }
+        }
+
+        /// <summary>
         /// リソース解放
         /// </summary>
         public void Dispose()
         {
             StopMonitoringAsync().Wait();
-            _externalSoftwareController?.Dispose();
         }
     }
 }

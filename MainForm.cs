@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace JPEGFolderMonitor
+namespace RapidPhotoWatcher
 {
     /// <summary>
     /// メインフォーム - JPEG/RAWファイル監視アプリケーションのメインUI
@@ -23,6 +23,31 @@ namespace JPEGFolderMonitor
             _logManager = new LogManager();
             InitializeServices();
             LoadSettings();
+            
+            // タスクバーアイコンを設定
+            try
+            {
+                // 実行ファイルと同じディレクトリのアイコンファイルを使用
+                string iconPath = Path.Combine(Application.StartupPath, "app_icon.ico");
+                if (File.Exists(iconPath))
+                {
+                    this.Icon = new Icon(iconPath);
+                }
+                else
+                {
+                    // フォールバック: プロジェクトディレクトリから読み込み
+                    string fallbackPath = @"D:\Self-work\JPEGFolderMonitor\app_icon.ico";
+                    if (File.Exists(fallbackPath))
+                    {
+                        this.Icon = new Icon(fallbackPath);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // アイコンファイルが見つからない場合は無視
+                _logManager?.LogError($"アイコン読み込みエラー: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -80,15 +105,17 @@ namespace JPEGFolderMonitor
             
             cmbDateTimeFormat.SelectedIndex = (int)_settings.DateTimeFormatType;
             
+            cmbSeparatorType.SelectedIndex = (int)_settings.SeparatorType;
+            
             numSequenceDigits.Value = _settings.SequenceDigits;
             numSequenceStart.Value = _settings.SequenceStartNumber;
             
             // 連携ソフトウェア設定
             chkAutoActivate.Checked = _settings.AutoActivateExternalSoftware;
-            cmbNavigationDirection.SelectedIndex = (int)_settings.NavigationDirection;
             
             UpdatePrefixTypeUI();
             UpdateCurrentSequenceDisplay();
+            UpdateFileNamePreview();
         }
 
         /// <summary>
@@ -170,7 +197,71 @@ namespace JPEGFolderMonitor
                 return false;
             }
 
+            // ファイル自動削除の警告
+            if (chkJPEG.Checked && !chkRAW.Checked)
+            {
+                // JPEGのみ監視時のRAWファイル削除警告
+                return ShowRawFileDeletionWarning();
+            }
+            else if (!chkJPEG.Checked && chkRAW.Checked)
+            {
+                // RAWのみ監視時のJPEGファイル削除警告
+                return ShowJpegFileDeletionWarning();
+            }
+            else
+            {
+                // 両方監視する場合は削除フラグをリセット
+                _settings.AutoDeleteRawFiles = false;
+                _settings.AutoDeleteJpegFiles = false;
+            }
+
             return true;
+        }
+
+        /// <summary>
+        /// RAWファイル削除警告ダイアログ
+        /// </summary>
+        private bool ShowRawFileDeletionWarning()
+        {
+            var message = "JPEGのみの監視が選択されています。\n\n" +
+                         "カメラがRAW+JPEG形式で撮影している場合、\n" +
+                         "監視停止時にRAWファイルは自動的に削除されます。\n\n" +
+                         "RAWファイルが必要な場合は、RAWファイル監視にもチェックを入れてください。\n\n" +
+                         "監視を開始しますか？";
+
+            var result = MessageBox.Show(message, "RAWファイル削除の確認", 
+                MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+            if (result == DialogResult.Yes)
+            {
+                _settings.AutoDeleteRawFiles = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// JPEGファイル削除警告ダイアログ
+        /// </summary>
+        private bool ShowJpegFileDeletionWarning()
+        {
+            var message = "RAWのみの監視が選択されています。\n\n" +
+                         "カメラがRAW+JPEG形式で撮影している場合、\n" +
+                         "監視停止時にJPEGファイルは自動的に削除されます。\n\n" +
+                         "JPEGファイルが必要な場合は、JPEGファイル監視にもチェックを入れてください。\n\n" +
+                         "監視を開始しますか？";
+
+            var result = MessageBox.Show(message, "JPEGファイル削除の確認", 
+                MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+            if (result == DialogResult.Yes)
+            {
+                _settings.AutoDeleteJpegFiles = true;
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -190,14 +281,14 @@ namespace JPEGFolderMonitor
             // 新しい設定項目
             _settings.PrefixType = radioPrefixCustom.Checked ? PrefixType.CustomText : PrefixType.DateTime;
             _settings.DateTimeFormatType = (DateTimeFormatType)cmbDateTimeFormat.SelectedIndex;
+            _settings.SeparatorType = (SeparatorType)cmbSeparatorType.SelectedIndex;
             _settings.SequenceDigits = (int)numSequenceDigits.Value;
             _settings.SequenceStartNumber = (int)numSequenceStart.Value;
             
             // 連携ソフトウェア設定
             _settings.AutoActivateExternalSoftware = chkAutoActivate.Checked;
-            _settings.NavigationDirection = (ImageNavigationDirection)cmbNavigationDirection.SelectedIndex;
             
-            _logManager.LogInfo($"設定保存: AutoActivate={_settings.AutoActivateExternalSoftware}, ExternalPath='{_settings.ExternalSoftwarePath}'");
+            _logManager.LogInfo($"設定保存: AutoActivate={_settings.AutoActivateExternalSoftware}, AutoDeleteRaw={_settings.AutoDeleteRawFiles}, AutoDeleteJpeg={_settings.AutoDeleteJpegFiles}, ExternalPath='{_settings.ExternalSoftwarePath}'");
         }
 
         /// <summary>
@@ -205,12 +296,49 @@ namespace JPEGFolderMonitor
         /// </summary>
         private void SetMonitoringState(bool isMonitoring)
         {
+            // 全ての開始ボタン
             btnStart.Enabled = !isMonitoring;
-            btnStop.Enabled = isMonitoring;
-            btnExit.Enabled = !isMonitoring; // 監視停止中のみ終了可能
+            btnBasicStart.Enabled = !isMonitoring;
+            btnExternalStart.Enabled = !isMonitoring;
             
-            // タブ全体を無効化/有効化
-            tabControl.Enabled = !isMonitoring;
+            // 全ての停止ボタン
+            btnStop.Enabled = isMonitoring;
+            btnBasicStop.Enabled = isMonitoring;
+            btnExternalStop.Enabled = isMonitoring;
+            
+            // 全ての終了ボタン（監視停止中のみ終了可能）
+            btnExit.Enabled = !isMonitoring;
+            btnBasicExit.Enabled = !isMonitoring;
+            btnExternalExit.Enabled = !isMonitoring;
+            
+            // 個別の設定コントロールを無効化/有効化（操作ボタンは除く）
+            SetSettingsControlsEnabled(!isMonitoring);
+        }
+
+        /// <summary>
+        /// 設定コントロールの有効/無効状態を設定
+        /// </summary>
+        private void SetSettingsControlsEnabled(bool enabled)
+        {
+            // 基本設定タブの設定項目
+            txtSourceFolder.Enabled = enabled;
+            txtDestinationFolder.Enabled = enabled;
+            btnBrowseSource.Enabled = enabled;
+            btnBrowseDestination.Enabled = enabled;
+            grpMonitorMode.Enabled = enabled;
+            grpFileTypes.Enabled = enabled;
+            
+            // ファイル命名タブの設定項目
+            grpPrefixType.Enabled = enabled;
+            grpCustomPrefix.Enabled = enabled;
+            grpDateTimeFormat.Enabled = enabled;
+            grpSeparator.Enabled = enabled;
+            grpSequencing.Enabled = enabled;
+            
+            // 連携ソフトウェアタブの設定項目
+            txtExternalSoftware.Enabled = enabled;
+            btnBrowseExternal.Enabled = enabled;
+            grpSoftwareSettings.Enabled = enabled;
         }
 
         /// <summary>
@@ -293,11 +421,12 @@ namespace JPEGFolderMonitor
         }
 
         /// <summary>
-        /// 設定変更時の処理（空の実装）
+        /// 設定変更時の処理
         /// </summary>
         private void OnSettingsChanged(object sender, EventArgs e)
         {
-            // リアルタイム保存は行わない - 終了時のみ保存
+            // プレビューを更新
+            UpdateFileNamePreview();
         }
 
         /// <summary>
@@ -306,6 +435,7 @@ namespace JPEGFolderMonitor
         private void OnPrefixTypeChanged(object sender, EventArgs e)
         {
             UpdatePrefixTypeUI();
+            UpdateFileNamePreview();
         }
 
         /// <summary>
@@ -324,7 +454,8 @@ namespace JPEGFolderMonitor
         {
             _settings.ResetSequenceNumber();
             UpdateCurrentSequenceDisplay();
-            MessageBox.Show($"連番を{_settings.SequenceStartNumber}にリセットしました。", "情報", 
+            UpdateFileNamePreview();
+            MessageBox.Show("連番を1にリセットしました。", "情報", 
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
@@ -335,6 +466,34 @@ namespace JPEGFolderMonitor
         {
             // 開始番号の設定値を現在の連番に更新
             numSequenceStart.Value = _settings.CurrentSequenceNumber;
+        }
+
+        /// <summary>
+        /// ファイル名プレビューを更新
+        /// </summary>
+        private void UpdateFileNamePreview()
+        {
+            try
+            {
+                // 現在のUI設定を一時的にAppSettingsに反映してプレビューを生成
+                var tempSettings = new AppSettings
+                {
+                    PrefixType = radioPrefixCustom.Checked ? PrefixType.CustomText : PrefixType.DateTime,
+                    FilePrefix = txtFilePrefix.Text,
+                    DateTimeFormatType = (DateTimeFormatType)cmbDateTimeFormat.SelectedIndex,
+                    SeparatorType = (SeparatorType)cmbSeparatorType.SelectedIndex,
+                    SequenceDigits = (int)numSequenceDigits.Value,
+                    CurrentSequenceNumber = (int)numSequenceStart.Value
+                };
+
+                var preview = tempSettings.GenerateFileNamePreview();
+                lblFileNamePreview.Text = preview;
+            }
+            catch (Exception ex)
+            {
+                lblFileNamePreview.Text = "プレビューエラー";
+                _logManager?.LogError($"プレビュー生成エラー: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -413,5 +572,6 @@ namespace JPEGFolderMonitor
             // Xボタンを無効化しているため、このメソッドは通常呼ばれない
             base.OnFormClosing(e);
         }
+
     }
 }

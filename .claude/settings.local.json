@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet publish:*)",
+      "Bash(dotnet build:*)",
+      "Bash(rm:*)",
+      "Bash(dotnet clean:*)",
+      "Bash(mkdir:*)",
+      "Bash(powershell:*)",
+      "Bash(copy:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(where iscc)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git reset:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

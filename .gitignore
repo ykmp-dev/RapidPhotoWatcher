@@ -76,3 +76,12 @@ $RECYCLE.BIN/
 # Application specific
 settings.json
 *.log
+
+# Large binary files and packages
+*.exe
+*.zip
+*.7z
+*.rar
+Installer/publish/
+Installer/*.zip
+Installer/*.exe

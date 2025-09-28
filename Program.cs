@@ -2,12 +2,12 @@ using System;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace JPEGFolderMonitor
+namespace RapidPhotoWatcher
 {
     internal static class Program
     {
         private static Mutex? _mutex = null;
-        private const string MutexName = "JPEGFolderMonitor_SingleInstance";
+        private const string MutexName = "RapidPhotoWatcher_SingleInstance";
 
         /// <summary>
         /// The main entry point for the application.
@@ -21,7 +21,7 @@ namespace JPEGFolderMonitor
             if (!createdNew)
             {
                 // 既に起動している場合
-                MessageBox.Show("JPEG/RAW Folder Monitor は既に実行中です。", "重複起動エラー", 
+                MessageBox.Show("RapidPhotoWatcher は既に実行中です。", "重複起動エラー", 
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -30,6 +30,11 @@ namespace JPEGFolderMonitor
             {
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
+                
+                // スプラッシュスクリーンを表示
+                SplashForm.ShowSplash(2000); // 2秒間表示
+                
+                // メインフォームを実行
                 Application.Run(new MainForm());
             }
             finally

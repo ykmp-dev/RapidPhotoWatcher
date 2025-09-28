@@ -3,7 +3,7 @@ using System.Configuration;
 using System.IO;
 using System.Text.Json;
 
-namespace JPEGFolderMonitor
+namespace RapidPhotoWatcher
 {
     /// <summary>
     /// 監視モード列挙型
@@ -36,13 +36,15 @@ namespace JPEGFolderMonitor
     }
 
     /// <summary>
-    /// ソフトウェア内画像ナビゲーション方向
+    /// 接頭辞と連番の区切り文字タイプ列挙型
     /// </summary>
-    public enum ImageNavigationDirection
+    public enum SeparatorType
     {
-        End,    // Endキーで最下部へ移動
-        Home    // Homeキーで最上部へ移動
+        None,       // なし
+        Underscore, // アンダーバー _
+        Hyphen      // ハイフン -
     }
+
 
     /// <summary>
     /// アプリケーション設定管理クラス
@@ -52,7 +54,7 @@ namespace JPEGFolderMonitor
         private const string SettingsFileName = "settings.json";
         private static readonly string SettingsFilePath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "JPEGFolderMonitor",
+            "RapidPhotoWatcher",
             SettingsFileName);
 
         /// <summary>
@@ -79,6 +81,11 @@ namespace JPEGFolderMonitor
         /// 日時フォーマットタイプ
         /// </summary>
         public DateTimeFormatType DateTimeFormatType { get; set; } = DateTimeFormatType.YYYYMMDD;
+
+        /// <summary>
+        /// 接頭辞と連番の区切り文字タイプ
+        /// </summary>
+        public SeparatorType SeparatorType { get; set; } = SeparatorType.None;
 
         /// <summary>
         /// 連番の桁数
@@ -126,9 +133,15 @@ namespace JPEGFolderMonitor
         public bool AutoActivateExternalSoftware { get; set; } = true;
 
         /// <summary>
-        /// 画像ナビゲーション方向
+        /// RAWファイル自動削除フラグ（JPEGのみ監視時）
         /// </summary>
-        public ImageNavigationDirection NavigationDirection { get; set; } = ImageNavigationDirection.End;
+        public bool AutoDeleteRawFiles { get; set; } = false;
+
+        /// <summary>
+        /// JPEGファイル自動削除フラグ（RAWのみ監視時）
+        /// </summary>
+        public bool AutoDeleteJpegFiles { get; set; } = false;
+
 
         /// <summary>
         /// 設定ファイルから読み込み
@@ -169,6 +182,7 @@ namespace JPEGFolderMonitor
                     PrefixType = settings.PrefixType;
                     FilePrefix = settings.FilePrefix ?? FilePrefix;
                     DateTimeFormatType = settings.DateTimeFormatType;
+                    SeparatorType = settings.SeparatorType;
                     SequenceDigits = settings.SequenceDigits > 0 ? settings.SequenceDigits : SequenceDigits;
                     SequenceStartNumber = settings.SequenceStartNumber > 0 ? settings.SequenceStartNumber : SequenceStartNumber;
                     CurrentSequenceNumber = settings.CurrentSequenceNumber > 0 ? settings.CurrentSequenceNumber : CurrentSequenceNumber;
@@ -178,7 +192,8 @@ namespace JPEGFolderMonitor
                     MonitorRAW = settings.MonitorRAW;
                     ExternalSoftwarePath = settings.ExternalSoftwarePath ?? ExternalSoftwarePath;
                     AutoActivateExternalSoftware = settings.AutoActivateExternalSoftware;
-                    NavigationDirection = settings.NavigationDirection;
+                    AutoDeleteRawFiles = settings.AutoDeleteRawFiles;
+                    AutoDeleteJpegFiles = settings.AutoDeleteJpegFiles;
                 }
             }
             catch (Exception ex)
@@ -300,11 +315,48 @@ namespace JPEGFolderMonitor
         }
 
         /// <summary>
+        /// 区切り文字を取得
+        /// </summary>
+        public string GetSeparator()
+        {
+            return SeparatorType switch
+            {
+                SeparatorType.Underscore => "_",
+                SeparatorType.Hyphen => "-",
+                SeparatorType.None => "",
+                _ => ""
+            };
+        }
+
+        /// <summary>
+        /// ファイル名プレビューを生成
+        /// </summary>
+        public string GenerateFileNamePreview()
+        {
+            var dateTime = DateTime.Now;
+            string prefix;
+            
+            if (PrefixType == PrefixType.DateTime)
+            {
+                prefix = GetDateTimePrefix(dateTime);
+            }
+            else
+            {
+                prefix = FilePrefix;
+            }
+
+            var separator = GetSeparator();
+            var sequenceNumber = CurrentSequenceNumber.ToString().PadLeft(SequenceDigits, '0');
+            
+            return $"{prefix}{separator}{sequenceNumber}.jpg";
+        }
+
+        /// <summary>
         /// 連番をリセット
         /// </summary>
         public void ResetSequenceNumber()
         {
-            CurrentSequenceNumber = SequenceStartNumber;
+            CurrentSequenceNumber = 1;
         }
     }
 }

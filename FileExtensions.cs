@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace JPEGFolderMonitor
+namespace RapidPhotoWatcher
 {
     /// <summary>
     /// ファイル拡張子関連のユーティリティクラス
@@ -161,6 +161,15 @@ namespace JPEGFolderMonitor
                 ".DNG" => "Adobe DNG RAW",
                 _ => extension.TrimStart('.')
             };
+        }
+
+        /// <summary>
+        /// RAW拡張子リストを取得
+        /// </summary>
+        /// <returns>RAW拡張子のコレクション</returns>
+        public static IEnumerable<string> GetRawExtensions()
+        {
+            return RawExtensions.Select(ext => ext.TrimStart('.'));
         }
 
         /// <summary>

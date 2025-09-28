@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace JPEGFolderMonitor
+namespace RapidPhotoWatcher
 {
     /// <summary>
     /// ログレベル列挙型
@@ -22,7 +22,7 @@ namespace JPEGFolderMonitor
         private const string LogFileName = "application.log";
         private static readonly string LogFilePath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "JPEGFolderMonitor",
+            "RapidPhotoWatcher",
             "Logs",
             LogFileName);
 

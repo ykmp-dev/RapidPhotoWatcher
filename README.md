@@ -1,10 +1,10 @@
-# JPEG/RAW フォルダ監視アプリケーション
+# RapidPhotoWatcher v1.1.0
 
-[![CI Build](https://github.com/yubertokyo/jpeg-raw-folder-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/yubertokyo/jpeg-raw-folder-monitor/actions/workflows/ci.yml)
-[![Release](https://github.com/yubertokyo/jpeg-raw-folder-monitor/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/yubertokyo/jpeg-raw-folder-monitor/actions/workflows/build-and-release.yml)
+[![CI Build](https://github.com/yubertokyo/rapidphotowatcher/actions/workflows/ci.yml/badge.svg)](https://github.com/yubertokyo/rapidphotowatcher/actions/workflows/ci.yml)
+[![Release](https://github.com/yubertokyo/rapidphotowatcher/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/yubertokyo/rapidphotowatcher/actions/workflows/build-and-release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-EOS Utility2に似たJPEG/RAWファイルの自動監視・リネーム・移動アプリケーションです。
+写真ファイルの高速監視・自動整理を行うWindows デスクトップアプリケーションです。
 
 ## 機能
 
@@ -54,13 +54,24 @@ FileSystemWatcherを使用したリアルタイム監視
 
 ## ダウンロード
 
-最新版は [Releases](https://github.com/yubertokyo/jpeg-raw-folder-monitor/releases) からダウンロードできます。
+最新版は [Releases](https://github.com/yubertokyo/rapidphotowatcher/releases) からダウンロードできます。
 
 ### インストール方法
 
-1. [最新リリース](https://github.com/yubertokyo/jpeg-raw-folder-monitor/releases/latest) から `JPEGFolderMonitor-win-x64.zip` をダウンロード
+#### 方法1: インストーラを使用
+1. [最新リリース](https://github.com/yubertokyo/rapidphotowatcher/releases/latest) から `RapidPhotoWatcher_v1.1.0_Setup.exe` をダウンロード
+2. インストーラを実行してウィザードに従う
+3. インストール完了後、デスクトップアイコンまたはスタートメニューから起動
+
+#### 方法2: ポータブル版
+1. [最新リリース](https://github.com/yubertokyo/rapidphotowatcher/releases/latest) から `RapidPhotoWatcher_v1.1.0_Portable.zip` をダウンロード
 2. 任意のフォルダに展開
-3. `JPEGFolderMonitor.exe` を実行
+3. `RapidPhotoWatcher.exe` を実行
+
+#### 方法3: バッチインストーラ
+1. [最新リリース](https://github.com/yubertokyo/rapidphotowatcher/releases/latest) から `RapidPhotoWatcher_v1.1.0_Portable.zip` をダウンロード
+2. 展開後、`Installer\install.bat` を管理者権限で実行
+3. インストール完了後、スタートメニューから起動
 
 ## 開発者向け
 
@@ -86,14 +97,14 @@ dotnet run
 
 設定は以下の場所に自動保存されます：
 ```
-%APPDATA%\JPEGFolderMonitor\settings.json
+%APPDATA%\RapidPhotoWatcher\settings.json
 ```
 
 ## ログファイル
 
 ログは以下の場所に記録されます：
 ```
-%APPDATA%\JPEGFolderMonitor\Logs\application.log
+%APPDATA%\RapidPhotoWatcher\Logs\application.log
 ```
 
 ## 注意事項
