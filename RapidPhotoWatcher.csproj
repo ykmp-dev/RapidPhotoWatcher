@@ -20,9 +20,9 @@
     <AssemblyCompany>YuberTokyo</AssemblyCompany>
     <AssemblyProduct>RapidPhotoWatcher</AssemblyProduct>
     <AssemblyCopyright>Copyright © 2024 YuberTokyo</AssemblyCopyright>
-    <AssemblyVersion>1.1.0.0</AssemblyVersion>
-    <FileVersion>1.1.0.0</FileVersion>
-    <Version>1.1.0</Version>
+    <AssemblyVersion>1.1.1.0</AssemblyVersion>
+    <FileVersion>1.1.1.0</FileVersion>
+    <Version>1.1.1</Version>
     
     <!-- Icon Settings -->
     <ApplicationIcon>app_icon.ico</ApplicationIcon>

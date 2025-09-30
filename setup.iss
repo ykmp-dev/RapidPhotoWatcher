@@ -1,8 +1,8 @@
 [Setup]
 AppId={{B8E8C8D8-1A2B-4C3D-8E9F-1234567890AB}
 AppName=RapidPhotoWatcher
-AppVersion=1.1.0
-AppVerName=RapidPhotoWatcher 1.1.0
+AppVersion=1.1.1
+AppVerName=RapidPhotoWatcher 1.1.1
 AppPublisher=YuberTokyo
 AppPublisherURL=https://github.com/yubertokyo
 AppSupportURL=https://github.com/yubertokyo/RapidPhotoWatcher
@@ -14,7 +14,7 @@ LicenseFile=LICENSE
 InfoBeforeFile=
 InfoAfterFile=
 OutputDir=.\Installer
-OutputBaseFilename=RapidPhotoWatcher_v1.1.0_Setup
+OutputBaseFilename=RapidPhotoWatcher_v1.1.1_Setup
 SetupIconFile=app_icon.ico
 Compression=lzma
 SolidCompression=yes

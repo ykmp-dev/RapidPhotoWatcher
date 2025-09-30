@@ -181,6 +181,9 @@ namespace RapidPhotoWatcher
 
                 _logManager.LogInfo("FileSystemWatcherによる即座監視を開始しました");
             });
+
+            // 既存ファイルの処理
+            await ProcessExistingFilesAsync();
         }
 
         /// <summary>
@@ -195,6 +198,57 @@ namespace RapidPhotoWatcher
 
                 _logManager.LogInfo($"ポーリング監視を開始しました - 間隔: {_settings.PollingInterval}秒");
             });
+        }
+
+        /// <summary>
+        /// 監視開始時の既存ファイル処理
+        /// </summary>
+        private async Task ProcessExistingFilesAsync()
+        {
+            try
+            {
+                if (_cancellationTokenSource?.Token.IsCancellationRequested == true)
+                {
+                    return;
+                }
+
+                _logManager.LogInfo("監視開始時の既存ファイルを処理します");
+
+                var patterns = FileExtensions.GetSearchPatterns(_settings!.MonitorJPEG, _settings.MonitorRAW);
+                var filesToProcess = new List<string>();
+
+                foreach (var pattern in patterns)
+                {
+                    var files = Directory.GetFiles(_settings.SourceFolder!, pattern, SearchOption.TopDirectoryOnly);
+                    filesToProcess.AddRange(files.Where(file => !IsFileAlreadyProcessed(file)));
+                }
+
+                if (filesToProcess.Count > 0)
+                {
+                    _logManager.LogInfo($"既存ファイル {filesToProcess.Count} 個を処理対象として検出しました");
+
+                    foreach (var file in filesToProcess)
+                    {
+                        if (_cancellationTokenSource?.Token.IsCancellationRequested == true)
+                        {
+                            break;
+                        }
+
+                        await OnFileCreatedAsync(file);
+                    }
+
+                    _logManager.LogInfo("既存ファイル処理が完了しました");
+                }
+                else
+                {
+                    _logManager.LogInfo("処理対象の既存ファイルはありませんでした");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logManager.LogError($"既存ファイル処理中にエラーが発生しました: {ex.Message}");
+                OnErrorOccurred("既存ファイル処理エラー", ex);
+            }
         }
 
         /// <summary>
