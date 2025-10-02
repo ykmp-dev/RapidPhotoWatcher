@@ -1,10 +1,17 @@
-# RapidPhotoWatcher v1.1.1
+# RapidPhotoWatcher v2.0.0
 
-[![CI Build](https://github.com/yubertokyo/RapidPhotoWatcher/actions/workflows/ci.yml/badge.svg)](https://github.com/yubertokyo/RapidPhotoWatcher/actions/workflows/ci.yml)
-[![Release](https://github.com/yubertokyo/RapidPhotoWatcher/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/yubertokyo/RapidPhotoWatcher/actions/workflows/build-and-release.yml)
+[![CI Build](https://github.com/ykmp-dev/RapidPhotoWatcher/actions/workflows/ci.yml/badge.svg)](https://github.com/ykmp-dev/RapidPhotoWatcher/actions/workflows/ci.yml)
+[![Release](https://github.com/ykmp-dev/RapidPhotoWatcher/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/ykmp-dev/RapidPhotoWatcher/actions/workflows/build-and-release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-写真ファイルの高速監視・自動整理を行うWindows デスクトップアプリケーションです。
+写真ファイルの高速監視・自動整理を行うクロスプラットフォーム対応デスクトップアプリケーションです。
+
+## ✨ v2.0.0の新機能
+
+- **🌐 クロスプラットフォーム対応**: Avalonia UIフレームワークによるWindows/macOS/Linux対応
+- **🎨 モダンUI**: 新しいユーザーインターフェースデザイン
+- **🔧 強化された設定管理**: より直感的な設定画面
+- **📱 レスポンシブデザイン**: 様々な画面サイズに対応
 
 ## 機能
 
@@ -17,8 +24,17 @@
 
 ## システム要件
 
-- Windows 10/11 Pro
-- .NET 6.0 Runtime
+### Windows
+- Windows 10/11 (x64)
+- .NET 8.0 Runtime（自己完結型配布により不要）
+
+### macOS
+- macOS 10.15 Catalina以降
+- .NET 8.0 Runtime
+
+### Linux
+- Ubuntu 18.04 LTS以降、Debian、Fedora、CentOS/RHEL等
+- .NET 8.0 Runtime
 
 ## サポート対象ファイル形式
 
@@ -55,43 +71,65 @@ FileSystemWatcherを使用したリアルタイム監視
 
 ## ダウンロード
 
-最新版は [Releases](https://github.com/yubertokyo/RapidPhotoWatcher/releases) からダウンロードできます。
+最新版は [Releases](https://github.com/ykmp-dev/RapidPhotoWatcher/releases) からダウンロードできます。
 
 ### インストール方法
 
-#### 方法1: インストーラを使用
-1. [最新リリース](https://github.com/yubertokyo/RapidPhotoWatcher/releases/latest) から `RapidPhotoWatcher_v1.1.1_Setup.exe` をダウンロード
+#### Windows - インストーラ版（推奨）
+1. [最新リリース](https://github.com/ykmp-dev/RapidPhotoWatcher/releases/latest) から `RapidPhotoWatcher_v2.0.0_Setup.exe` をダウンロード
 2. インストーラを実行してウィザードに従う
 3. インストール完了後、デスクトップアイコンまたはスタートメニューから起動
 
-#### 方法2: ポータブル版
-1. [最新リリース](https://github.com/yubertokyo/RapidPhotoWatcher/releases/latest) から `RapidPhotoWatcher_v1.1.1_Portable.zip` をダウンロード
+#### クロスプラットフォーム - 手動インストール
+1. [最新リリース](https://github.com/ykmp-dev/RapidPhotoWatcher/releases/latest) から対応するプラットフォーム版をダウンロード
+   - Windows: `RapidPhotoWatcher-win-x64.zip`
+   - macOS: `RapidPhotoWatcher-osx-x64.zip`
+   - Linux: `RapidPhotoWatcher-linux-x64.zip`
 2. 任意のフォルダに展開
-3. `RapidPhotoWatcher.exe` を実行
-
-#### 方法3: バッチインストーラ
-1. [最新リリース](https://github.com/yubertokyo/RapidPhotoWatcher/releases/latest) から `RapidPhotoWatcher_v1.1.1_Portable.zip` をダウンロード
-2. 展開後、`Installer\install.bat` を管理者権限で実行
-3. インストール完了後、スタートメニューから起動
+3. 実行ファイルを起動
+   - Windows: `RapidPhotoWatcher.AvaloniaUI.exe`
+   - macOS/Linux: `./RapidPhotoWatcher.AvaloniaUI`
 
 ## 開発者向け
+
+### プロジェクト構造
+
+```
+RapidPhotoWatcher/
+├── RapidPhotoWatcher.AvaloniaUI/    # メインのAvalonia UIアプリケーション
+├── Shared/                          # 共有ビジネスロジック
+├── WindowsForms-Original/           # 旧版（Windows Forms）
+├── Installer/                       # インストーラーファイル
+└── setup.iss                       # Inno Setupスクリプト
+```
 
 ### ビルド方法
 
 ```bash
 # 開発用ビルド
+cd RapidPhotoWatcher.AvaloniaUI
 dotnet build
 
-# リリース用ビルド（EXE生成）
-build.bat
-# または
-dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
+# リリース用ビルド（Windows x64、自己完結型）
+dotnet publish -c Release -r win-x64 --self-contained
+
+# クロスプラットフォーム向けビルド
+dotnet publish -c Release -r osx-x64 --self-contained     # macOS
+dotnet publish -c Release -r linux-x64 --self-contained   # Linux
 ```
 
-### 実行方法
+### 開発環境での実行
 
 ```bash
+cd RapidPhotoWatcher.AvaloniaUI
 dotnet run
+```
+
+### インストーラー作成
+
+```bash
+# Inno Setup 6が必要
+"C:\Program Files (x86)\Inno Setup 6\iscc.exe" setup.iss
 ```
 
 ## 設定ファイル
@@ -115,6 +153,16 @@ dotnet run
 - 同名ファイルが存在する場合、連番を付加して重複を回避します
 
 ## 更新履歴
+
+### v2.0.0 (2024-10-02) - Avalonia UI Cross-Platform Edition
+- **🌟 メジャーアップデート**: Avalonia UIフレームワークへの完全移行
+- **🌐 クロスプラットフォーム対応**: Windows/macOS/Linux対応
+- **🎨 新UI**: モダンでレスポンシブなユーザーインターフェース
+- **🏗️ アーキテクチャ刷新**: 共有ビジネスロジック（Shared/）の分離
+- **📦 自己完結型配布**: .NET Runtimeが不要なパッケージ
+- **🔧 設定管理の改善**: より直感的な設定画面
+- **📱 高DPI対応**: 様々な解像度に対応
+- **🔄 後方互換性**: 旧版（Windows Forms）もWindowsForms-Original/で保持
 
 ### v1.1.1 (2024-09-30)
 - **新機能**: 即座監視モードで監視開始時の既存ファイル自動処理機能を追加
