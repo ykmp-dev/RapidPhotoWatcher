@@ -1,8 +1,8 @@
 [Setup]
 AppId={{B8E8C8D8-1A2B-4C3D-8E9F-1234567890AB}
 AppName=RapidPhotoWatcher
-AppVersion=2.0.0
-AppVerName=RapidPhotoWatcher 2.0.0
+AppVersion=2.0.1
+AppVerName=RapidPhotoWatcher 2.0.1
 AppPublisher=YuberTokyo
 AppPublisherURL=https://github.com/yubertokyo
 AppSupportURL=https://github.com/yubertokyo/RapidPhotoWatcher
@@ -14,7 +14,7 @@ LicenseFile=LICENSE
 InfoBeforeFile=
 InfoAfterFile=
 OutputDir=.\Installer
-OutputBaseFilename=RapidPhotoWatcher_v2.0.0_Setup
+OutputBaseFilename=RapidPhotoWatcher_v2.0.1_Setup
 SetupIconFile=app_icon.ico
 Compression=lzma
 SolidCompression=yes
@@ -52,7 +52,7 @@ Type: filesandordirs; Name: "{userappdata}\RapidPhotoWatcher"
 procedure InitializeWizard;
 begin
   WizardForm.WelcomeLabel2.Caption := 
-    '写真ファイルの高速監視・自動整理を行うアプリケーション (v2.0.0 - Avalonia UI版)' + #13#10#13#10 +
+    '写真ファイルの高速監視・自動整理を行うアプリケーション (v2.0.1 - Avalonia UI版)' + #13#10#13#10 +
     'このアプリケーションは以下の機能を提供します：' + #13#10 +
     '• フォルダ監視によるファイル自動処理' + #13#10 +
     '• カスタマイズ可能なファイル名規則' + #13#10 +

@@ -3,7 +3,7 @@ REM RapidPhotoWatcher Cross-Platform Build Script for Windows
 
 set PROJECT_DIR=RapidPhotoWatcher.AvaloniaUI
 set OUTPUT_DIR=dist
-set VERSION=2.0.0
+set VERSION=2.0.1
 
 echo 🚀 Building RapidPhotoWatcher v%VERSION% for multiple platforms...
 

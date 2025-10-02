@@ -27,6 +27,7 @@
       "Bash(./RapidPhotoWatcher.AvaloniaUI.exe)",
       "Bash(sed:*)",
       "Bash(RapidPhotoWatcher.AvaloniaUI.exe)",
+      "Bash(\"C:\\Program Files (x86)\\Inno Setup 6\\iscc.exe\" setup.iss)",
       "Bash(\"C:\\Program Files (x86)\\Inno Setup 6\\iscc.exe\" setup.iss)"
     ],
     "deny": [],
