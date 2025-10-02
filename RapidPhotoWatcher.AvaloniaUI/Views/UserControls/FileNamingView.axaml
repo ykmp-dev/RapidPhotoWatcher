@@ -1,0 +1,142 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RapidPhotoWatcher.AvaloniaUI.ViewModels"
+             x:Class="RapidPhotoWatcher.AvaloniaUI.Views.UserControls.FileNamingView"
+             x:DataType="vm:FileNamingViewModel">
+
+    <StackPanel Spacing="12" Margin="12">
+            
+            <!-- プレフィックス設定セクション -->
+            <Border Classes="section-card">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="🏷️ プレフィックス設定" Classes="section-title"/>
+                    
+                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto">
+                        <!-- プレフィックスタイプ選択 -->
+                        <RadioButton Grid.Row="0" Grid.Column="0"
+                                    Content="📝 カスタムテキスト"
+                                    IsChecked="{Binding UseCustomPrefix}"
+                                    IsEnabled="{Binding CanModifySettings}"
+                                    GroupName="PrefixType"
+                                    FontWeight="SemiBold"/>
+                        
+                        <RadioButton Grid.Row="0" Grid.Column="1"
+                                    Content="📅 撮影日時"
+                                    IsChecked="{Binding UseDateTime}"
+                                    IsEnabled="{Binding CanModifySettings}"
+                                    GroupName="PrefixType"
+                                    FontWeight="SemiBold"/>
+                        
+                        <!-- カスタムプレフィックスと日時フォーマット -->
+                        <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" 
+                                   Orientation="Horizontal" Spacing="16" Margin="0,12,0,0">
+                            <!-- カスタムプレフィックス -->
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="接頭辞:" VerticalAlignment="Center" Width="60"/>
+                                <TextBox Text="{Binding CustomPrefix}"
+                                        Width="120"
+                                        IsEnabled="{Binding CanEditCustomPrefix}"
+                                        Watermark="IMG_"/>
+                            </StackPanel>
+                            
+                            <!-- 日時フォーマット -->
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="日時形式:" VerticalAlignment="Center" Width="60"/>
+                                <ComboBox ItemsSource="{Binding DateTimeFormats}"
+                                         SelectedIndex="{Binding SelectedDateTimeFormat}"
+                                         Width="250"
+                                         IsEnabled="{Binding CanEditDateTimeFormat}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 区切り文字・連番設定セクション -->
+            <Border Classes="section-card">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="🔢 連番・区切り文字設定" Classes="section-title"/>
+                    
+                    <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto,Auto,Auto">
+                        <!-- 区切り文字 -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" 
+                                  Text="区切り文字:" 
+                                  VerticalAlignment="Center" 
+                                  Margin="0,0,12,0"/>
+                        <ComboBox Grid.Row="0" Grid.Column="1" 
+                                 ItemsSource="{Binding SeparatorTypes}"
+                                 SelectedIndex="{Binding SelectedSeparator}"
+                                 IsEnabled="{Binding CanModifySettings}"
+                                 Width="150"/>
+                        
+                        <!-- 連番桁数 -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" 
+                                  Text="連番桁数:" 
+                                  VerticalAlignment="Center" 
+                                  Margin="0,12,12,0"/>
+                        <NumericUpDown Grid.Row="1" Grid.Column="1" 
+                                      Value="{Binding SequenceDigits}"
+                                      Minimum="1" Maximum="10"
+                                      Width="120"
+                                      Height="32"
+                                      ShowButtonSpinner="True"
+                                      FormatString="0"
+                                      Increment="1"
+                                      IsEnabled="{Binding CanModifySettings}"
+                                      Margin="0,12,0,0"/>
+                        
+                        <!-- 開始番号 -->
+                        <TextBlock Grid.Row="1" Grid.Column="2" 
+                                  Text="開始番号:" 
+                                  VerticalAlignment="Center" 
+                                  Margin="20,12,12,0"/>
+                        <StackPanel Grid.Row="1" Grid.Column="3" 
+                                   Orientation="Horizontal" 
+                                   Spacing="8" 
+                                   Margin="0,12,0,0">
+                            <NumericUpDown Value="{Binding SequenceStartNumber}"
+                                          Minimum="1" Maximum="9999999"
+                                          Width="120"
+                                          Height="32"
+                                          ShowButtonSpinner="True"
+                                          FormatString="0"
+                                          Increment="1"
+                                          IsEnabled="{Binding CanModifySettings}"/>
+                            <Button Command="{Binding ResetSequenceCommand}"
+                                   Classes="secondary"
+                                   IsEnabled="{Binding CanModifySettings}"
+                                   ToolTip.Tip="連番を1にリセット">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="🔄" FontSize="12"/>
+                                    <TextBlock Text="リセット" FontSize="11"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- プレビューセクション -->
+            <Border Classes="section-card preview">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="👀 ファイル名プレビュー" Classes="section-title"/>
+                    
+                    <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                           CornerRadius="6"
+                           Padding="12">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <TextBlock Text="例:" 
+                                      VerticalAlignment="Center"
+                                      Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                            <TextBlock Text="{Binding FileNamePreview}"
+                                      FontFamily="Consolas"
+                                      FontSize="14"
+                                      FontWeight="Bold"
+                                      Foreground="{DynamicResource SystemAccentColor}"
+                                      VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,128 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:RapidPhotoWatcher.AvaloniaUI.ViewModels"
+        xmlns:views="using:RapidPhotoWatcher.AvaloniaUI.Views.UserControls"
+        x:Class="RapidPhotoWatcher.AvaloniaUI.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="{Binding WindowTitle}"
+        Width="800" Height="650"
+        MinWidth="720" MinHeight="550"
+        Icon="/Assets/app_icon.ico"
+        WindowStartupLocation="CenterScreen"
+        CanResize="True"
+        SystemDecorations="BorderOnly"
+        ExtendClientAreaToDecorationsHint="False">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel />
+    </Design.DataContext>
+
+    <Grid RowDefinitions="*,Auto">
+        
+        <!-- メインコンテンツエリア -->
+        <TabControl Grid.Row="0" 
+                   SelectedIndex="{Binding SelectedTabIndex}"
+                   Margin="16,16,16,16"
+                   TabStripPlacement="Top">
+            
+            <!-- 基本設定タブ -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="⚙️" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="基本設定" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:BasicSettingsView DataContext="{Binding BasicSettings}"/>
+            </TabItem>
+
+            <!-- ファイル命名タブ -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="📝" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="ファイル命名" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:FileNamingView DataContext="{Binding FileNaming}"/>
+            </TabItem>
+
+            <!-- 外部ソフト連携タブ -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="🔗" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="連携ソフト" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:ExternalSoftwareView DataContext="{Binding ExternalSoftware}"/>
+            </TabItem>
+
+            <!-- ログタブ -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="📄" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="ログ" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:LogView DataContext="{Binding Log}"/>
+            </TabItem>
+        </TabControl>
+
+        <!-- 下部操作エリア -->
+        <Border Grid.Row="1" 
+                Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="16">
+            
+            <Grid ColumnDefinitions="*,Auto">
+                
+                <!-- ステータス表示 -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding StatusMessage}"
+                              FontWeight="SemiBold"
+                              VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- 操作ボタン -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
+                    
+                    <!-- 開始ボタン -->
+                    <Button Command="{Binding StartMonitoringCommand}"
+                           Classes="primary"
+                           IsEnabled="{Binding !IsMonitoring}"
+                           Padding="20,8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="▶" FontSize="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="開始" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- 停止ボタン -->
+                    <Button Command="{Binding StopMonitoringCommand}"
+                           Classes="danger"
+                           IsEnabled="{Binding IsMonitoring}"
+                           Padding="20,8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="⏸" FontSize="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="停止" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- 終了ボタン -->
+                    <Button Command="{Binding ExitApplicationCommand}"
+                           Classes="secondary"
+                           IsEnabled="{Binding !IsMonitoring}"
+                           Padding="20,8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="✕" FontSize="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="終了" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

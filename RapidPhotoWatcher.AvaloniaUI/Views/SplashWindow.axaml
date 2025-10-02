@@ -1,0 +1,53 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="RapidPhotoWatcher.AvaloniaUI.Views.SplashWindow"
+        Title="RapidPhotoWatcher"
+        Width="400"
+        Height="300"
+        WindowStartupLocation="CenterScreen"
+        CanResize="False"
+        SystemDecorations="None"
+        Background="Transparent"
+        Opacity="0">
+    
+    <Border Background="#F8FAFC"
+            BorderBrush="#3B82F6" 
+            BorderThickness="2"
+            CornerRadius="12">
+        <Grid>
+            <StackPanel HorizontalAlignment="Center" 
+                       VerticalAlignment="Center"
+                       Spacing="24">
+                
+                <!-- アプリアイコン・タイトル -->
+                <StackPanel HorizontalAlignment="Center" Spacing="16">
+                    <TextBlock Text="📸" 
+                              FontSize="48"
+                              HorizontalAlignment="Center"/>
+                    <TextBlock Text="RapidPhotoWatcher" 
+                              FontSize="24"
+                              FontWeight="Bold"
+                              Foreground="#1F2937"
+                              HorizontalAlignment="Center"/>
+                </StackPanel>
+                
+                <!-- バージョン -->
+                <TextBlock Text="Version 2.0.0" 
+                          FontSize="12"
+                          Foreground="#9CA3AF"
+                          HorizontalAlignment="Center"/>
+                
+                <!-- ローディング表示 -->
+                <StackPanel Orientation="Horizontal" 
+                           HorizontalAlignment="Center"
+                           Spacing="8">
+                    <TextBlock Text="⚡" FontSize="16"/>
+                    <TextBlock Text="起動中..." 
+                              FontSize="14"
+                              Foreground="#6B7280"/>
+                </StackPanel>
+                
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

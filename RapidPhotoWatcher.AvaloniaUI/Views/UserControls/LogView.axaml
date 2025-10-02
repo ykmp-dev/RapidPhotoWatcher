@@ -1,0 +1,51 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RapidPhotoWatcher.AvaloniaUI.ViewModels"
+             x:Class="RapidPhotoWatcher.AvaloniaUI.Views.UserControls.LogView"
+             x:DataType="vm:LogViewModel">
+
+    <Grid RowDefinitions="*">
+        
+        <!-- ログ表示エリア -->
+        <Border Classes="section-card" Margin="20">
+            <Grid RowDefinitions="Auto,*">
+                
+                <!-- ヘッダー -->
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+                    <TextBlock Grid.Column="0" 
+                              Text="📄 アプリケーションログ" 
+                              Classes="section-title"/>
+                    
+                    <Button Grid.Column="1" 
+                           Content="🗑️ クリア"
+                           Classes="secondary"
+                           Command="{Binding ClearLogsCommand}"
+                           Padding="12,6"/>
+                </Grid>
+                
+                <!-- ログテキスト表示 -->
+                <Border Grid.Row="1" 
+                       Background="#1a1a1a"
+                       CornerRadius="8"
+                       BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}"
+                       BorderThickness="1">
+                    <ScrollViewer Name="LogScrollViewer"
+                                 VerticalScrollBarVisibility="Auto"
+                                 HorizontalScrollBarVisibility="Auto">
+                        <TextBox Text="{Binding LogText}"
+                                Background="Transparent"
+                                Foreground="#e0e0e0"
+                                FontFamily="Consolas"
+                                FontSize="11"
+                                IsReadOnly="True"
+                                BorderThickness="0"
+                                Padding="16"
+                                MinHeight="350"
+                                TextWrapping="NoWrap"
+                                AcceptsReturn="True"/>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
