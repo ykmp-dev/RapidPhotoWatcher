@@ -136,7 +136,10 @@ namespace RapidPhotoWatcher.AvaloniaUI.ViewModels
             {
                 if (SetProperty(ref _sequenceStartNumber, value))
                 {
+                    // AppSettingsの開始番号を更新（これにより現在の連番も自動的にリセットされる）
+                    _settings.SequenceStartNumber = value;
                     UpdateFileNamePreview();
+                    _logManager.LogInfo($"連番開始番号を {value} に変更しました");
                 }
             }
         }
@@ -167,13 +170,14 @@ namespace RapidPhotoWatcher.AvaloniaUI.ViewModels
         {
             try
             {
-                _settings.ResetSequenceNumber();
+                // 開始番号を1に設定（これにより現在の連番も自動的に1にリセットされる）
                 SequenceStartNumber = 1;
+                _settings.ResetSequenceNumber();
                 UpdateFileNamePreview();
-                _logManager.LogInfo("連番を1にリセットしました");
+                _logManager.LogInfo("連番を開始番号にリセットしました");
                 
                 // Avalonia版メッセージボックス
-                ShowInfoMessage("連番を1にリセットしました。");
+                ShowInfoMessage($"連番を開始番号({_settings.SequenceStartNumber})にリセットしました。");
             }
             catch (Exception ex)
             {
@@ -251,6 +255,12 @@ namespace RapidPhotoWatcher.AvaloniaUI.ViewModels
             if (SequenceDigits < 1 || SequenceDigits > 10)
             {
                 ShowValidationError("連番桁数は1〜10の範囲で設定してください。");
+                return false;
+            }
+
+            if (SequenceStartNumber < 0)
+            {
+                ShowValidationError("連番開始番号は0以上で設定してください。");
                 return false;
             }
 

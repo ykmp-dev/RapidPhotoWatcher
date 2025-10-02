@@ -57,6 +57,8 @@ namespace RapidPhotoWatcher
             "RapidPhotoWatcher",
             SettingsFileName);
 
+        private int _sequenceStartNumber = 1;
+
         /// <summary>
         /// 監視フォルダパス
         /// </summary>
@@ -95,7 +97,19 @@ namespace RapidPhotoWatcher
         /// <summary>
         /// 連番の開始番号
         /// </summary>
-        public int SequenceStartNumber { get; set; } = 1;
+        public int SequenceStartNumber 
+        { 
+            get => _sequenceStartNumber;
+            set 
+            {
+                if (_sequenceStartNumber != value)
+                {
+                    _sequenceStartNumber = value;
+                    // 開始番号が変更された場合、現在の連番を新しい開始番号にリセット
+                    CurrentSequenceNumber = value;
+                }
+            }
+        }
 
         /// <summary>
         /// 現在の連番
@@ -184,8 +198,15 @@ namespace RapidPhotoWatcher
                     DateTimeFormatType = settings.DateTimeFormatType;
                     SeparatorType = settings.SeparatorType;
                     SequenceDigits = settings.SequenceDigits > 0 ? settings.SequenceDigits : SequenceDigits;
-                    SequenceStartNumber = settings.SequenceStartNumber > 0 ? settings.SequenceStartNumber : SequenceStartNumber;
-                    CurrentSequenceNumber = settings.CurrentSequenceNumber > 0 ? settings.CurrentSequenceNumber : CurrentSequenceNumber;
+                    
+                    // 開始番号を先に設定（これによりCurrentSequenceNumberが自動調整される）
+                    var loadedStartNumber = settings.SequenceStartNumber > 0 ? settings.SequenceStartNumber : SequenceStartNumber;
+                    _sequenceStartNumber = loadedStartNumber; // プライベートフィールドに直接設定してセッターをバイパス
+                    
+                    // 現在の連番は読み込み値を使用。ただし開始番号より小さい場合は開始番号に調整
+                    var loadedCurrentNumber = settings.CurrentSequenceNumber > 0 ? settings.CurrentSequenceNumber : CurrentSequenceNumber;
+                    CurrentSequenceNumber = Math.Max(loadedCurrentNumber, loadedStartNumber);
+                    
                     MonitorMode = settings.MonitorMode;
                     PollingInterval = settings.PollingInterval > 0 ? settings.PollingInterval : PollingInterval;
                     MonitorJPEG = settings.MonitorJPEG;
@@ -285,6 +306,24 @@ namespace RapidPhotoWatcher
                 return false;
             }
 
+            if (SequenceStartNumber < 0)
+            {
+                errorMessage = "連番の開始番号は0以上で設定してください。";
+                return false;
+            }
+
+            if (SequenceDigits < 1 || SequenceDigits > 10)
+            {
+                errorMessage = "連番の桁数は1桁から10桁の間で設定してください。";
+                return false;
+            }
+
+            if (CurrentSequenceNumber < SequenceStartNumber)
+            {
+                errorMessage = $"現在の連番({CurrentSequenceNumber})が開始番号({SequenceStartNumber})より小さくなっています。";
+                return false;
+            }
+
             return true;
         }
 
@@ -352,11 +391,29 @@ namespace RapidPhotoWatcher
         }
 
         /// <summary>
-        /// 連番をリセット
+        /// 連番をリセット（開始番号に戻す）
         /// </summary>
         public void ResetSequenceNumber()
         {
-            CurrentSequenceNumber = 1;
+            CurrentSequenceNumber = SequenceStartNumber;
+        }
+
+        /// <summary>
+        /// 連番を開始番号にリセットする（明示的）
+        /// </summary>
+        public void ResetToStartNumber()
+        {
+            CurrentSequenceNumber = SequenceStartNumber;
+        }
+
+        /// <summary>
+        /// 開始番号を設定し、現在の連番もリセットする
+        /// </summary>
+        /// <param name="startNumber">新しい開始番号</param>
+        public void SetStartNumberAndReset(int startNumber)
+        {
+            SequenceStartNumber = startNumber;
+            // プロパティセッターで自動的にCurrentSequenceNumberがリセットされる
         }
     }
 }
