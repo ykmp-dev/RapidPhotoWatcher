@@ -60,10 +60,13 @@ namespace RapidPhotoWatcher.AvaloniaUI.ViewModels
             {
                 if (SetProperty(ref _useCustomPrefix, value))
                 {
+                    // AppSettingsに即座に反映
+                    _settings.PrefixType = value ? PrefixType.CustomText : PrefixType.DateTime;
                     OnPropertyChanged(nameof(UseDateTime));
                     OnPropertyChanged(nameof(CanEditCustomPrefix));
                     OnPropertyChanged(nameof(CanEditDateTimeFormat));
                     UpdateFileNamePreview();
+                    _logManager.LogInfo($"プレフィックスタイプを {(value ? "カスタムテキスト" : "撮影日時")} に変更しました");
                 }
             }
         }
@@ -84,7 +87,10 @@ namespace RapidPhotoWatcher.AvaloniaUI.ViewModels
             {
                 if (SetProperty(ref _customPrefix, value))
                 {
+                    // AppSettingsに即座に反映
+                    _settings.FilePrefix = value;
                     UpdateFileNamePreview();
+                    _logManager.LogInfo($"カスタムプレフィックスを '{value}' に変更しました");
                 }
             }
         }
@@ -98,7 +104,10 @@ namespace RapidPhotoWatcher.AvaloniaUI.ViewModels
             {
                 if (SetProperty(ref _selectedDateTimeFormat, value))
                 {
+                    // AppSettingsに即座に反映
+                    _settings.DateTimeFormatType = (DateTimeFormatType)value;
                     UpdateFileNamePreview();
+                    _logManager.LogInfo($"日時フォーマットを {GetDateTimeFormatName(value)} に変更しました");
                 }
             }
         }
@@ -112,7 +121,10 @@ namespace RapidPhotoWatcher.AvaloniaUI.ViewModels
             {
                 if (SetProperty(ref _selectedSeparator, value))
                 {
+                    // AppSettingsに即座に反映
+                    _settings.SeparatorType = (SeparatorType)value;
                     UpdateFileNamePreview();
+                    _logManager.LogInfo($"区切り文字を {GetSeparatorName(value)} に変更しました");
                 }
             }
         }
@@ -124,7 +136,10 @@ namespace RapidPhotoWatcher.AvaloniaUI.ViewModels
             {
                 if (SetProperty(ref _sequenceDigits, value))
                 {
+                    // AppSettingsに即座に反映
+                    _settings.SequenceDigits = value;
                     UpdateFileNamePreview();
+                    _logManager.LogInfo($"連番桁数を {value} 桁に変更しました");
                 }
             }
         }
@@ -224,12 +239,24 @@ namespace RapidPhotoWatcher.AvaloniaUI.ViewModels
 
         public void ApplySettings(AppSettings settings)
         {
-            UseCustomPrefix = settings.PrefixType == PrefixType.CustomText;
-            CustomPrefix = settings.FilePrefix ?? "IMG_";
-            SelectedDateTimeFormat = (int)settings.DateTimeFormatType;
-            SelectedSeparator = (int)settings.SeparatorType;
-            SequenceDigits = settings.SequenceDigits;
-            SequenceStartNumber = settings.CurrentSequenceNumber;
+            // 設定読み込み時は即座反映を避けるため直接フィールドに設定
+            _useCustomPrefix = settings.PrefixType == PrefixType.CustomText;
+            _customPrefix = settings.FilePrefix ?? "IMG_";
+            _selectedDateTimeFormat = (int)settings.DateTimeFormatType;
+            _selectedSeparator = (int)settings.SeparatorType;
+            _sequenceDigits = settings.SequenceDigits;
+            _sequenceStartNumber = settings.SequenceStartNumber; // 開始番号を使用
+
+            // すべてのプロパティ変更を通知
+            OnPropertyChanged(nameof(UseCustomPrefix));
+            OnPropertyChanged(nameof(UseDateTime));
+            OnPropertyChanged(nameof(CustomPrefix));
+            OnPropertyChanged(nameof(SelectedDateTimeFormat));
+            OnPropertyChanged(nameof(SelectedSeparator));
+            OnPropertyChanged(nameof(SequenceDigits));
+            OnPropertyChanged(nameof(SequenceStartNumber));
+            OnPropertyChanged(nameof(CanEditCustomPrefix));
+            OnPropertyChanged(nameof(CanEditDateTimeFormat));
 
             UpdateFileNamePreview();
         }
@@ -277,6 +304,30 @@ namespace RapidPhotoWatcher.AvaloniaUI.ViewModels
         private void ShowValidationError(string message)
         {
             _logManager.LogError($"ファイル命名設定エラー: {message}");
+        }
+
+        private string GetSeparatorName(int index)
+        {
+            return index switch
+            {
+                0 => "なし",
+                1 => "アンダーバー(_)",
+                2 => "ハイフン(-)",
+                _ => "不明"
+            };
+        }
+
+        private string GetDateTimeFormatName(int index)
+        {
+            return index switch
+            {
+                0 => "YYYYMMDD",
+                1 => "YYYY_MM_DD",
+                2 => "YYYY-MM-DD",
+                3 => "YYYYMMDD_HHMMSS",
+                4 => "YYYY_MM_DD_HH_MM_SS",
+                _ => "不明"
+            };
         }
 
         #endregion

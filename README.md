@@ -1,4 +1,4 @@
-# RapidPhotoWatcher v2.0.1
+# RapidPhotoWatcher v2.0.2
 
 [![CI Build](https://github.com/ykmp-dev/RapidPhotoWatcher/actions/workflows/ci.yml/badge.svg)](https://github.com/ykmp-dev/RapidPhotoWatcher/actions/workflows/ci.yml)
 [![Release](https://github.com/ykmp-dev/RapidPhotoWatcher/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/ykmp-dev/RapidPhotoWatcher/actions/workflows/build-and-release.yml)
@@ -6,7 +6,13 @@
 
 写真ファイルの高速監視・自動整理を行うクロスプラットフォーム対応デスクトップアプリケーションです。
 
-## ✨ v2.0.1の新機能
+## ✨ v2.0.2の新機能
+
+### 🐛 バグ修正（v2.0.2）
+- **区切り文字選択の修正**: UIで区切り文字を変更した時に設定が即座に反映されるように修正
+- **設定同期の改善**: ViewModelの全ての設定項目でAppSettingsとの即座同期を実装
+- **ログ機能強化**: 設定変更時のより詳細なログ出力を追加
+- **ウィンドウタイトル更新**: バージョン番号をv2.0.2に更新
 
 ### 🐛 バグ修正（v2.0.1）
 - **連番システムの重要な修正**: 開始番号を変更した時に現在の連番が正しくリセットされるように修正
@@ -84,17 +90,17 @@ FileSystemWatcherを使用したリアルタイム監視
 ### インストール方法
 
 #### Windows - インストーラ版（推奨）
-1. [最新リリース](https://github.com/ykmp-dev/RapidPhotoWatcher/releases/latest) から `RapidPhotoWatcher_v2.0.1_Setup.exe` をダウンロード
+1. [最新リリース](https://github.com/ykmp-dev/RapidPhotoWatcher/releases/latest) から `RapidPhotoWatcher_v2.0.2_Setup.exe` をダウンロード
 2. インストーラを実行してウィザードに従う
 3. インストール完了後、デスクトップアイコンまたはスタートメニューから起動
 
 #### クロスプラットフォーム - 手動インストール
 1. [最新リリース](https://github.com/ykmp-dev/RapidPhotoWatcher/releases/latest) から対応するプラットフォーム版をダウンロード
-   - **Windows x64**: `RapidPhotoWatcher-v2.0.1-win-x64.zip`
-   - **macOS Intel**: `RapidPhotoWatcher-v2.0.1-osx-x64.zip`
-   - **macOS Apple Silicon**: `RapidPhotoWatcher-v2.0.1-osx-arm64.zip`
-   - **Linux x64**: `RapidPhotoWatcher-v2.0.1-linux-x64.zip`
-   - **Linux ARM64**: `RapidPhotoWatcher-v2.0.1-linux-arm64.zip`
+   - **Windows x64**: `RapidPhotoWatcher-v2.0.2-win-x64.zip`
+   - **macOS Intel**: `RapidPhotoWatcher-v2.0.2-osx-x64.zip`
+   - **macOS Apple Silicon**: `RapidPhotoWatcher-v2.0.2-osx-arm64.zip`
+   - **Linux x64**: `RapidPhotoWatcher-v2.0.2-linux-x64.zip`
+   - **Linux ARM64**: `RapidPhotoWatcher-v2.0.2-linux-arm64.zip`
 2. アーカイブを任意のフォルダに展開
 3. 実行ファイルを起動
    - **Windows**: `RapidPhotoWatcher.AvaloniaUI.exe`をダブルクリック
@@ -177,6 +183,12 @@ dotnet run
 - 同名ファイルが存在する場合、連番を付加して重複を回避します
 
 ## 更新履歴
+
+### v2.0.2 (2024-10-02) - UI Settings Bug Fix
+- **🐛 区切り文字選択の修正**: UIで区切り文字を変更した時に設定が即座に反映されない問題を修正
+- **🔄 設定同期の改善**: ViewModelの全ての設定項目でAppSettingsとの即座同期を実装
+- **📝 ログ機能強化**: 設定変更時のより詳細で分かりやすいログ出力を追加
+- **🎯 ウィンドウタイトル更新**: バージョン番号をタイトルバーに表示するように更新（v2.0.2）
 
 ### v2.0.1 (2024-10-02) - Sequence Number Bug Fix
 - **🐛 重要なバグ修正**: 連番開始番号変更時の動作を修正

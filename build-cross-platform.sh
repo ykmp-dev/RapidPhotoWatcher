@@ -6,7 +6,7 @@ set -e
 
 PROJECT_DIR="RapidPhotoWatcher.AvaloniaUI"
 OUTPUT_DIR="dist"
-VERSION="2.0.1"
+VERSION="2.0.2"
 
 echo "🚀 Building RapidPhotoWatcher v${VERSION} for multiple platforms..."
 
