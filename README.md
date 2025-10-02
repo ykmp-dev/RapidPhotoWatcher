@@ -12,6 +12,7 @@
 - **🎨 モダンUI**: 新しいユーザーインターフェースデザイン
 - **🔧 強化された設定管理**: より直感的な設定画面
 - **📱 レスポンシブデザイン**: 様々な画面サイズに対応
+- **🛡️ 信頼性向上**: クロスプラットフォーム対応のファイル監視とフォールバック機構
 
 ## 機能
 
@@ -82,13 +83,21 @@ FileSystemWatcherを使用したリアルタイム監視
 
 #### クロスプラットフォーム - 手動インストール
 1. [最新リリース](https://github.com/ykmp-dev/RapidPhotoWatcher/releases/latest) から対応するプラットフォーム版をダウンロード
-   - Windows: `RapidPhotoWatcher-win-x64.zip`
-   - macOS: `RapidPhotoWatcher-osx-x64.zip`
-   - Linux: `RapidPhotoWatcher-linux-x64.zip`
-2. 任意のフォルダに展開
+   - **Windows x64**: `RapidPhotoWatcher-v2.0.0-win-x64.zip`
+   - **macOS Intel**: `RapidPhotoWatcher-v2.0.0-osx-x64.zip`
+   - **macOS Apple Silicon**: `RapidPhotoWatcher-v2.0.0-osx-arm64.zip`
+   - **Linux x64**: `RapidPhotoWatcher-v2.0.0-linux-x64.zip`
+   - **Linux ARM64**: `RapidPhotoWatcher-v2.0.0-linux-arm64.zip`
+2. アーカイブを任意のフォルダに展開
 3. 実行ファイルを起動
-   - Windows: `RapidPhotoWatcher.AvaloniaUI.exe`
-   - macOS/Linux: `./RapidPhotoWatcher.AvaloniaUI`
+   - **Windows**: `RapidPhotoWatcher.AvaloniaUI.exe`をダブルクリック
+   - **macOS**: ターミナルで`./RapidPhotoWatcher.AvaloniaUI`を実行
+   - **Linux**: ターミナルで`./RapidPhotoWatcher.AvaloniaUI`を実行（実行権限付与が必要な場合があります）
+
+#### 注意事項（クロスプラットフォーム版）
+- **macOS**: 初回起動時にセキュリティ警告が表示される場合があります。「システム環境設定」→「セキュリティとプライバシー」で許可してください
+- **Linux**: 実行権限を付与する必要がある場合があります：`chmod +x RapidPhotoWatcher.AvaloniaUI`
+- **ファイル監視**: 各プラットフォームのネイティブAPIを使用しますが、問題が発生した場合は自動的にポーリングモードにフォールバックします
 
 ## 開発者向け
 
@@ -114,8 +123,16 @@ dotnet build
 dotnet publish -c Release -r win-x64 --self-contained
 
 # クロスプラットフォーム向けビルド
-dotnet publish -c Release -r osx-x64 --self-contained     # macOS
-dotnet publish -c Release -r linux-x64 --self-contained   # Linux
+dotnet publish -c Release -r osx-x64 --self-contained     # macOS Intel
+dotnet publish -c Release -r osx-arm64 --self-contained   # macOS Apple Silicon
+dotnet publish -c Release -r linux-x64 --self-contained   # Linux x64
+dotnet publish -c Release -r linux-arm64 --self-contained # Linux ARM64
+
+# すべてのプラットフォーム向けに一括ビルド
+# Windows
+build-cross-platform.bat
+# macOS/Linux  
+./build-cross-platform.sh
 ```
 
 ### 開発環境での実行
@@ -156,12 +173,14 @@ dotnet run
 
 ### v2.0.0 (2024-10-02) - Avalonia UI Cross-Platform Edition
 - **🌟 メジャーアップデート**: Avalonia UIフレームワークへの完全移行
-- **🌐 クロスプラットフォーム対応**: Windows/macOS/Linux対応
+- **🌐 クロスプラットフォーム対応**: Windows/macOS/Linux対応（x64/ARM64アーキテクチャ）
 - **🎨 新UI**: モダンでレスポンシブなユーザーインターフェース
 - **🏗️ アーキテクチャ刷新**: 共有ビジネスロジック（Shared/）の分離
 - **📦 自己完結型配布**: .NET Runtimeが不要なパッケージ
 - **🔧 設定管理の改善**: より直感的な設定画面
 - **📱 高DPI対応**: 様々な解像度に対応
+- **🛡️ 信頼性向上**: FileSystemWatcherのクロスプラットフォーム対応とフォールバック機構
+- **⚡ パフォーマンス向上**: エラーハンドリングとポーリングフォールバックの強化
 - **🔄 後方互換性**: 旧版（Windows Forms）もWindowsForms-Original/で保持
 
 ### v1.1.1 (2024-09-30)

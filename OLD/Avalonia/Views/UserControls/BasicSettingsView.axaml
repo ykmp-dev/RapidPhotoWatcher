@@ -1,0 +1,108 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RapidPhotoWatcher.Avalonia.ViewModels"
+             x:Class="RapidPhotoWatcher.Avalonia.Views.UserControls.BasicSettingsView"
+             x:DataType="vm:BasicSettingsViewModel">
+
+    <ScrollViewer>
+        <StackPanel Spacing="24" Margin="20">
+            
+            <!-- フォルダ設定セクション -->
+            <Border Classes="section-card">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="📁 フォルダ設定" Classes="section-title"/>
+                    
+                    <!-- 監視フォルダ -->
+                    <Grid ColumnDefinitions="120,*,Auto" RowDefinitions="Auto,Auto">
+                        <TextBlock Grid.Row="0" Grid.Column="0" 
+                                  Text="監視フォルダ:" 
+                                  VerticalAlignment="Center" 
+                                  Margin="0,0,12,0"/>
+                        <TextBox Grid.Row="0" Grid.Column="1" 
+                                Text="{Binding SourceFolder}"
+                                Watermark="監視するフォルダを選択してください"
+                                Margin="0,0,8,0"/>
+                        <Button Grid.Row="0" Grid.Column="2" 
+                               Command="{Binding BrowseSourceCommand}"
+                               Classes="icon-button"
+                               ToolTip.Tip="フォルダ選択">
+                            <TextBlock Text="📁" FontSize="16"/>
+                        </Button>
+                    </Grid>
+                    
+                    <!-- 移動先フォルダ -->
+                    <Grid ColumnDefinitions="120,*,Auto" RowDefinitions="Auto,Auto">
+                        <TextBlock Grid.Row="0" Grid.Column="0" 
+                                  Text="移動先フォルダ:" 
+                                  VerticalAlignment="Center" 
+                                  Margin="0,0,12,0"/>
+                        <TextBox Grid.Row="0" Grid.Column="1" 
+                                Text="{Binding DestinationFolder}"
+                                Watermark="ファイル移動先フォルダを選択してください"
+                                Margin="0,0,8,0"/>
+                        <Button Grid.Row="0" Grid.Column="2" 
+                               Command="{Binding BrowseDestinationCommand}"
+                               Classes="icon-button"
+                               ToolTip.Tip="フォルダ選択">
+                            <TextBlock Text="📁" FontSize="16"/>
+                        </Button>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 監視モード設定セクション -->
+            <Border Classes="section-card">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="👁️ 監視モード" Classes="section-title"/>
+                    
+                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto">
+                        <!-- 即座監視 -->
+                        <RadioButton Grid.Row="0" Grid.Column="0"
+                                    Content="⚡ 即座監視"
+                                    IsChecked="{Binding IsImmediateMode}"
+                                    GroupName="MonitorMode"
+                                    FontWeight="SemiBold"/>
+                        
+                        <!-- ポーリング監視 -->
+                        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Vertical" Spacing="8">
+                            <RadioButton Content="🔄 ポーリング監視"
+                                        IsChecked="{Binding IsPollingMode}"
+                                        GroupName="MonitorMode"
+                                        FontWeight="SemiBold"/>
+                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="20,0,0,0">
+                                <TextBlock Text="間隔:" VerticalAlignment="Center"/>
+                                <NumericUpDown Value="{Binding PollingInterval}"
+                                              Minimum="1" Maximum="3600"
+                                              Width="80"
+                                              IsEnabled="{Binding IsPollingMode}"/>
+                                <TextBlock Text="秒" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- ファイル形式設定セクション -->
+            <Border Classes="section-card">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="🖼️ ファイル形式" Classes="section-title"/>
+                    
+                    <StackPanel Orientation="Horizontal" Spacing="32">
+                        <CheckBox Content="📷 JPEG"
+                                 IsChecked="{Binding MonitorJpeg}"
+                                 FontWeight="SemiBold"/>
+                        <CheckBox Content="🎞️ RAW"
+                                 IsChecked="{Binding MonitorRaw}"
+                                 FontWeight="SemiBold"/>
+                    </StackPanel>
+                    
+                    <!-- 注意書き -->
+                    <TextBlock Text="💡 JPEG/RAWのどちらか一方のみを選択すると、監視停止時に他方のファイルが自動削除されます"
+                              Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                              FontSize="11"
+                              TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

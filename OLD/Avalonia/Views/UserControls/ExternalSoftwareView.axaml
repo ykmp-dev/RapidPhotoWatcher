@@ -1,0 +1,92 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RapidPhotoWatcher.Avalonia.ViewModels"
+             x:Class="RapidPhotoWatcher.Avalonia.Views.UserControls.ExternalSoftwareView"
+             x:DataType="vm:ExternalSoftwareViewModel">
+
+    <ScrollViewer>
+        <StackPanel Spacing="24" Margin="20">
+            
+            <!-- 外部ソフトウェア設定セクション -->
+            <Border Classes="section-card">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="🔗 外部ソフトウェア連携" Classes="section-title"/>
+                    
+                    <!-- ソフトウェアパス -->
+                    <Grid ColumnDefinitions="140,*,Auto">
+                        <TextBlock Grid.Column="0" 
+                                  Text="連携ソフトウェア:" 
+                                  VerticalAlignment="Center" 
+                                  Margin="0,0,12,0"/>
+                        <TextBox Grid.Column="1" 
+                                Text="{Binding ExternalSoftwarePath}"
+                                Watermark="連携する外部ソフトウェアのパスを指定"
+                                Margin="0,0,8,0"/>
+                        <Button Grid.Column="2" 
+                               Command="{Binding BrowseExternalSoftwareCommand}"
+                               Classes="icon-button"
+                               ToolTip.Tip="ファイル選択">
+                            <TextBlock Text="📁" FontSize="16"/>
+                        </Button>
+                    </Grid>
+                    
+                    <!-- 説明テキスト -->
+                    <TextBlock Text="💡 Photoshop、Lightroom、FastStone Image Viewer等のソフトウェアを指定できます"
+                              Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                              FontSize="11"
+                              TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+
+            <!-- 自動アクティブ化設定セクション -->
+            <Border Classes="section-card">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="⚡ 自動アクティブ化設定" Classes="section-title"/>
+                    
+                    <CheckBox Content="📸 撮影時に連携ソフトウェアをアクティブ化"
+                             IsChecked="{Binding AutoActivateExternalSoftware}"
+                             FontWeight="SemiBold"/>
+                    
+                    <TextBlock Text="✅ 有効にすると、新しい写真がフォルダに移動されたときに指定したソフトウェアが自動的にアクティブになります"
+                              Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                              FontSize="11"
+                              TextWrapping="Wrap"
+                              Margin="24,0,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- 使用例セクション -->
+            <Border Classes="section-card info">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="💡 使用例" Classes="section-title"/>
+                    
+                    <StackPanel Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="🎨" FontSize="14" VerticalAlignment="Top" Margin="0,2,0,0"/>
+                            <TextBlock Text="Adobe Photoshop: 撮影後すぐに画像編集を開始"
+                                      TextWrapping="Wrap"/>
+                        </StackPanel>
+                        
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="📊" FontSize="14" VerticalAlignment="Top" Margin="0,2,0,0"/>
+                            <TextBlock Text="Adobe Lightroom: RAW現像とライブラリ管理"
+                                      TextWrapping="Wrap"/>
+                        </StackPanel>
+                        
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="👁️" FontSize="14" VerticalAlignment="Top" Margin="0,2,0,0"/>
+                            <TextBlock Text="FastStone Image Viewer: 高速プレビューと基本編集"
+                                      TextWrapping="Wrap"/>
+                        </StackPanel>
+                        
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="🌟" FontSize="14" VerticalAlignment="Top" Margin="0,2,0,0"/>
+                            <TextBlock Text="お好みの画像ビューアーやRAW現像ソフト"
+                                      TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

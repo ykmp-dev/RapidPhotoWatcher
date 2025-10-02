@@ -1,0 +1,276 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- カラーリソース定義 -->
+    <Styles.Resources>
+        <!-- メインカラーパレット -->
+        <Color x:Key="PrimaryColor">#3B82F6</Color>        <!-- Blue-500 -->
+        <Color x:Key="PrimaryHoverColor">#2563EB</Color>    <!-- Blue-600 -->
+        <Color x:Key="SuccessColor">#10B981</Color>         <!-- Emerald-500 -->
+        <Color x:Key="SuccessHoverColor">#059669</Color>    <!-- Emerald-600 -->
+        <Color x:Key="DangerColor">#EF4444</Color>          <!-- Red-500 -->
+        <Color x:Key="DangerHoverColor">#DC2626</Color>     <!-- Red-600 -->
+        <Color x:Key="SecondaryColor">#6B7280</Color>       <!-- Gray-500 -->
+        <Color x:Key="SecondaryHoverColor">#4B5563</Color>  <!-- Gray-600 -->
+        
+        <!-- 背景色 -->
+        <Color x:Key="SectionCardBackground">#F8FAFC</Color>   <!-- Slate-50 -->
+        <Color x:Key="SectionCardBorder">#E2E8F0</Color>       <!-- Slate-200 -->
+        <Color x:Key="PreviewCardBackground">#F1F5F9</Color>   <!-- Slate-100 -->
+        <Color x:Key="InfoCardBackground">#EFF6FF</Color>      <!-- Blue-50 -->
+        
+        <!-- ソリッドカラーブラシ -->
+        <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
+        <SolidColorBrush x:Key="PrimaryHoverBrush" Color="{StaticResource PrimaryHoverColor}"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
+        <SolidColorBrush x:Key="SuccessHoverBrush" Color="{StaticResource SuccessHoverColor}"/>
+        <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}"/>
+        <SolidColorBrush x:Key="DangerHoverBrush" Color="{StaticResource DangerHoverColor}"/>
+        <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource SecondaryColor}"/>
+        <SolidColorBrush x:Key="SecondaryHoverBrush" Color="{StaticResource SecondaryHoverColor}"/>
+        
+        <SolidColorBrush x:Key="SectionCardBackgroundBrush" Color="{StaticResource SectionCardBackground}"/>
+        <SolidColorBrush x:Key="SectionCardBorderBrush" Color="{StaticResource SectionCardBorder}"/>
+        <SolidColorBrush x:Key="PreviewCardBackgroundBrush" Color="{StaticResource PreviewCardBackground}"/>
+        <SolidColorBrush x:Key="InfoCardBackgroundBrush" Color="{StaticResource InfoCardBackground}"/>
+    </Styles.Resources>
+
+    <!-- セクションカードスタイル -->
+    <Style Selector="Border.section-card">
+        <Setter Property="Background" Value="{StaticResource SectionCardBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource SectionCardBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Padding" Value="20"/>
+        <Setter Property="Margin" Value="0,0,0,0"/>
+        <Style Selector="^:pointerover">
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+        </Style>
+    </Style>
+    
+    <!-- プレビューカードスタイル -->
+    <Style Selector="Border.section-card.preview">
+        <Setter Property="Background" Value="{StaticResource PreviewCardBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+        <Setter Property="BorderThickness" Value="2"/>
+    </Style>
+    
+    <!-- 情報カードスタイル -->
+    <Style Selector="Border.section-card.info">
+        <Setter Property="Background" Value="{StaticResource InfoCardBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+
+    <!-- セクションタイトルスタイル -->
+    <Style Selector="TextBlock.section-title">
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="#1F2937"/>
+        <Setter Property="Margin" Value="0,0,0,0"/>
+    </Style>
+
+    <!-- プライマリボタンスタイル -->
+    <Style Selector="Button.primary">
+        <Setter Property="Background" Value="{StaticResource SuccessBrush}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="MinHeight" Value="36"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource SuccessHoverBrush}"/>
+        </Style>
+        <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource SuccessHoverBrush}"/>
+        </Style>
+        <Style Selector="^:disabled">
+            <Setter Property="Opacity" Value="0.5"/>
+        </Style>
+    </Style>
+
+    <!-- 危険ボタンスタイル -->
+    <Style Selector="Button.danger">
+        <Setter Property="Background" Value="{StaticResource DangerBrush}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="MinHeight" Value="36"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource DangerHoverBrush}"/>
+        </Style>
+        <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource DangerHoverBrush}"/>
+        </Style>
+        <Style Selector="^:disabled">
+            <Setter Property="Opacity" Value="0.5"/>
+        </Style>
+    </Style>
+
+    <!-- セカンダリボタンスタイル -->
+    <Style Selector="Button.secondary">
+        <Setter Property="Background" Value="#F9FAFB"/>
+        <Setter Property="Foreground" Value="{StaticResource SecondaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource SectionCardBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="MinHeight" Value="36"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Style Selector="^:pointerover">
+            <Setter Property="Background" Value="#F3F4F6"/>
+            <Setter Property="BorderBrush" Value="{StaticResource SecondaryBrush}"/>
+        </Style>
+        <Style Selector="^:pressed">
+            <Setter Property="Background" Value="#E5E7EB"/>
+        </Style>
+        <Style Selector="^:disabled">
+            <Setter Property="Opacity" Value="0.5"/>
+        </Style>
+    </Style>
+
+    <!-- アイコンボタンスタイル -->
+    <Style Selector="Button.icon-button">
+        <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Width" Value="40"/>
+        <Setter Property="Height" Value="32"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource PrimaryHoverBrush}"/>
+        </Style>
+        <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource PrimaryHoverBrush}"/>
+        </Style>
+    </Style>
+
+    <!-- タブコントロールスタイル -->
+    <Style Selector="TabControl">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Padding" Value="0"/>
+    </Style>
+    
+    <Style Selector="TabItem">
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Padding" Value="16,12"/>
+        <Setter Property="Margin" Value="0,0,4,0"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource SecondaryBrush}"/>
+        <Setter Property="BorderThickness" Value="0,0,0,2"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Style Selector="^:selected">
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="^:pointerover">
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Background" Value="#F8FAFC"/>
+        </Style>
+    </Style>
+
+    <!-- テキストボックススタイル -->
+    <Style Selector="TextBox">
+        <Setter Property="BorderBrush" Value="{StaticResource SectionCardBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Padding" Value="12,8"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="MinHeight" Value="32"/>
+        <Style Selector="^:focus">
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+        <Style Selector="^:pointerover">
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+        </Style>
+    </Style>
+
+    <!-- コンボボックススタイル -->
+    <Style Selector="ComboBox">
+        <Setter Property="BorderBrush" Value="{StaticResource SectionCardBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Padding" Value="12,8"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="MinHeight" Value="32"/>
+        <Style Selector="^:focus">
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+        <Style Selector="^:pointerover">
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+        </Style>
+    </Style>
+
+    <!-- NumericUpDownスタイル -->
+    <Style Selector="NumericUpDown">
+        <Setter Property="BorderBrush" Value="{StaticResource SectionCardBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="MinHeight" Value="32"/>
+        <Style Selector="^:focus">
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+        <Style Selector="^:pointerover">
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+        </Style>
+    </Style>
+
+    <!-- チェックボックススタイル -->
+    <Style Selector="CheckBox">
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Style Selector="^ /template/ Border#NormalRectangle">
+            <Setter Property="BorderBrush" Value="{StaticResource SectionCardBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+        <Style Selector="^:checked /template/ Border#NormalRectangle">
+            <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+        </Style>
+        <Style Selector="^:pointerover /template/ Border#NormalRectangle">
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+        </Style>
+    </Style>
+
+    <!-- ラジオボタンスタイル -->
+    <Style Selector="RadioButton">
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Style Selector="^ /template/ Ellipse#OuterEllipse">
+            <Setter Property="Stroke" Value="{StaticResource SectionCardBorderBrush}"/>
+            <Setter Property="StrokeThickness" Value="2"/>
+        </Style>
+        <Style Selector="^:checked /template/ Ellipse#OuterEllipse">
+            <Setter Property="Stroke" Value="{StaticResource PrimaryBrush}"/>
+        </Style>
+        <Style Selector="^:checked /template/ Ellipse#CheckOuterEllipse">
+            <Setter Property="Fill" Value="{StaticResource PrimaryBrush}"/>
+        </Style>
+        <Style Selector="^:pointerover /template/ Ellipse#OuterEllipse">
+            <Setter Property="Stroke" Value="{StaticResource PrimaryBrush}"/>
+        </Style>
+    </Style>
+
+    <!-- スクロールビューアースタイル -->
+    <Style Selector="ScrollViewer">
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+
+    <!-- ウィンドウスタイル -->
+    <Style Selector="Window">
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="FontFamily" Value="Segoe UI, Arial, sans-serif"/>
+        <Setter Property="FontSize" Value="13"/>
+    </Style>
+</Styles>

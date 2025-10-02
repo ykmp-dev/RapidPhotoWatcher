@@ -178,7 +178,7 @@ namespace RapidPhotoWatcher
         }
 
         /// <summary>
-        /// 即座監視開始
+        /// 即座監視開始（クロスプラットフォーム対応）
         /// </summary>
         private async Task StartImmediateMonitoringAsync()
         {
@@ -187,17 +187,48 @@ namespace RapidPhotoWatcher
                 _fileSystemWatcher = new FileSystemWatcher(_settings!.SourceFolder!)
                 {
                     IncludeSubdirectories = false,
-                    EnableRaisingEvents = true
+                    EnableRaisingEvents = true,
+                    // クロスプラットフォーム対応のための設定
+                    NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.LastWrite | NotifyFilters.FileName,
+                    // バッファサイズを増やして取りこぼしを防ぐ
+                    InternalBufferSize = 8192 * 4
                 };
 
                 _fileSystemWatcher.Created += async (sender, e) => await OnFileCreatedAsync(e.FullPath);
                 _fileSystemWatcher.Renamed += async (sender, e) => await OnFileCreatedAsync(e.FullPath);
+                _fileSystemWatcher.Changed += async (sender, e) => await OnFileCreatedAsync(e.FullPath);
+                
+                // エラーハンドリングを追加
+                _fileSystemWatcher.Error += (sender, e) =>
+                {
+                    _logManager.LogError($"FileSystemWatcher エラー: {e.GetException().Message}");
+                    // エラー時にポーリング監視にフォールバック
+                    _ = Task.Run(async () => await StartPollingFallbackAsync());
+                };
 
-                _logManager.LogInfo("FileSystemWatcherによる即座監視を開始しました");
+                var platform = Environment.OSVersion.Platform;
+                _logManager.LogInfo($"FileSystemWatcherによる即座監視を開始しました (プラットフォーム: {platform})");
             });
 
             // 既存ファイルの処理
             await ProcessExistingFilesAsync();
+        }
+
+        /// <summary>
+        /// FileSystemWatcherエラー時のポーリングフォールバック
+        /// </summary>
+        private async Task StartPollingFallbackAsync()
+        {
+            _logManager.LogWarning("FileSystemWatcherが失敗したため、ポーリングモードにフォールバックします");
+            
+            // FileSystemWatcherを停止
+            _fileSystemWatcher?.Dispose();
+            _fileSystemWatcher = null;
+            
+            // ポーリング監視を開始
+            await Task.Delay(1000); // 1秒待機
+            _pollingTimer = new Timer(async _ => await PollingCheckAsync(), 
+                null, TimeSpan.Zero, TimeSpan.FromSeconds(Math.Max(_settings!.PollingInterval, 5)));
         }
 
         /// <summary>
