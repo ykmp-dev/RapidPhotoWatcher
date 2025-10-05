@@ -20,6 +20,7 @@ namespace RapidPhotoWatcher.AvaloniaUI.ViewModels
         private int _selectedSeparator;
         private int _sequenceDigits = 4;
         private int _sequenceStartNumber = 1;
+        private int _currentSequenceNumber = 1;
         private string _fileNamePreview = "IMG_0001.jpg";
         private bool _canModifySettings = true;
 
@@ -119,13 +120,43 @@ namespace RapidPhotoWatcher.AvaloniaUI.ViewModels
             get => _selectedSeparator;
             set
             {
+                // 値の範囲チェック
+                if (value < 0 || value >= SeparatorTypes.Count)
+                {
+                    System.Diagnostics.Debug.WriteLine($"SelectedSeparator: Invalid value {value}");
+                    return;
+                }
+
                 if (SetProperty(ref _selectedSeparator, value))
                 {
-                    // AppSettingsに即座に反映
-                    _settings.SeparatorType = (SeparatorType)value;
-                    UpdateFileNamePreview();
-                    _logManager.LogInfo($"区切り文字を {GetSeparatorName(value)} に変更しました");
+                    try
+                    {
+                        // AppSettingsに即座に反映
+                        _settings.SeparatorType = (SeparatorType)value;
+                        UpdateFileNamePreview();
+                        OnPropertyChanged(nameof(SelectedSeparatorText));
+                        
+                        // ログ出力（UIスレッドで実行）
+                        _logManager.LogInfo($"区切り文字を {GetSeparatorName(value)} に変更しました");
+                    }
+                    catch (Exception ex)
+                    {
+                        // エラーが発生した場合はログに記録
+                        System.Diagnostics.Debug.WriteLine($"SelectedSeparator error: {ex.Message}");
+                    }
                 }
+            }
+        }
+
+        public string SelectedSeparatorText
+        {
+            get
+            {
+                if (_selectedSeparator >= 0 && _selectedSeparator < SeparatorTypes.Count)
+                {
+                    return SeparatorTypes[_selectedSeparator];
+                }
+                return "なし";
             }
         }
 
@@ -146,15 +177,17 @@ namespace RapidPhotoWatcher.AvaloniaUI.ViewModels
 
         public int SequenceStartNumber
         {
-            get => _sequenceStartNumber;
+            get => _currentSequenceNumber; // 現在の連番を表示
             set
             {
-                if (SetProperty(ref _sequenceStartNumber, value))
+                if (SetProperty(ref _currentSequenceNumber, value))
                 {
-                    // AppSettingsの開始番号を更新（これにより現在の連番も自動的にリセットされる）
+                    // 手動変更時は開始番号も現在の連番も同じ値に設定
                     _settings.SequenceStartNumber = value;
+                    _settings.CurrentSequenceNumber = value;
+                    _sequenceStartNumber = value; // 内部的な開始番号も更新
                     UpdateFileNamePreview();
-                    _logManager.LogInfo($"連番開始番号を {value} に変更しました");
+                    _logManager.LogInfo($"連番を {value} に変更しました");
                 }
             }
         }
@@ -185,14 +218,14 @@ namespace RapidPhotoWatcher.AvaloniaUI.ViewModels
         {
             try
             {
-                // 開始番号を1に設定（これにより現在の連番も自動的に1にリセットされる）
+                // 連番を1に設定
                 SequenceStartNumber = 1;
                 _settings.ResetSequenceNumber();
                 UpdateFileNamePreview();
-                _logManager.LogInfo("連番を開始番号にリセットしました");
+                _logManager.LogInfo("連番を1にリセットしました");
                 
                 // Avalonia版メッセージボックス
-                ShowInfoMessage($"連番を開始番号({_settings.SequenceStartNumber})にリセットしました。");
+                ShowInfoMessage("連番を1にリセットしました。");
             }
             catch (Exception ex)
             {
@@ -215,7 +248,7 @@ namespace RapidPhotoWatcher.AvaloniaUI.ViewModels
                     DateTimeFormatType = (DateTimeFormatType)SelectedDateTimeFormat,
                     SeparatorType = (SeparatorType)SelectedSeparator,
                     SequenceDigits = SequenceDigits,
-                    CurrentSequenceNumber = SequenceStartNumber
+                    CurrentSequenceNumber = _currentSequenceNumber
                 };
 
                 FileNamePreview = tempSettings.GenerateFileNamePreview();
@@ -245,7 +278,8 @@ namespace RapidPhotoWatcher.AvaloniaUI.ViewModels
             _selectedDateTimeFormat = (int)settings.DateTimeFormatType;
             _selectedSeparator = (int)settings.SeparatorType;
             _sequenceDigits = settings.SequenceDigits;
-            _sequenceStartNumber = settings.SequenceStartNumber; // 開始番号を使用
+            _sequenceStartNumber = settings.SequenceStartNumber;
+            _currentSequenceNumber = settings.CurrentSequenceNumber; // 現在の連番を設定
 
             // すべてのプロパティ変更を通知
             OnPropertyChanged(nameof(UseCustomPrefix));
@@ -253,8 +287,9 @@ namespace RapidPhotoWatcher.AvaloniaUI.ViewModels
             OnPropertyChanged(nameof(CustomPrefix));
             OnPropertyChanged(nameof(SelectedDateTimeFormat));
             OnPropertyChanged(nameof(SelectedSeparator));
+            OnPropertyChanged(nameof(SelectedSeparatorText));
             OnPropertyChanged(nameof(SequenceDigits));
-            OnPropertyChanged(nameof(SequenceStartNumber));
+            OnPropertyChanged(nameof(SequenceStartNumber)); // 現在の連番として表示
             OnPropertyChanged(nameof(CanEditCustomPrefix));
             OnPropertyChanged(nameof(CanEditDateTimeFormat));
 
@@ -328,6 +363,16 @@ namespace RapidPhotoWatcher.AvaloniaUI.ViewModels
                 4 => "YYYY_MM_DD_HH_MM_SS",
                 _ => "不明"
             };
+        }
+
+        /// <summary>
+        /// AppSettingsから現在の連番を取得してViewModelを更新
+        /// </summary>
+        public void RefreshCurrentSequenceNumber()
+        {
+            _currentSequenceNumber = _settings.CurrentSequenceNumber;
+            OnPropertyChanged(nameof(SequenceStartNumber)); // UIの表示を更新
+            UpdateFileNamePreview();
         }
 
         #endregion

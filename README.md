@@ -1,4 +1,4 @@
-# RapidPhotoWatcher v2.0.2
+# RapidPhotoWatcher v2.1
 
 [![CI Build](https://github.com/ykmp-dev/RapidPhotoWatcher/actions/workflows/ci.yml/badge.svg)](https://github.com/ykmp-dev/RapidPhotoWatcher/actions/workflows/ci.yml)
 [![Release](https://github.com/ykmp-dev/RapidPhotoWatcher/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/ykmp-dev/RapidPhotoWatcher/actions/workflows/build-and-release.yml)
@@ -6,7 +6,14 @@
 
 写真ファイルの高速監視・自動整理を行うクロスプラットフォーム対応デスクトップアプリケーションです。
 
-## ✨ v2.0.2の新機能
+## ✨ v2.1の新機能
+
+### 🎨 UI/UX の大幅改善（v2.1）
+- **📊 リアルタイム連番表示**: 監視中にファイル処理されると現在の連番がリアルタイムで更新される
+- **🎯 EOS Utility風のスマートUI**: 開始番号フィールドが現在の連番を表示する直感的なインターフェース
+- **🖼️ 美しいヘッダーデザイン**: アプリ名とバージョンを表示する洗練されたヘッダーエリア
+- **📏 最適化されたウィンドウサイズ**: 800x650pxの使いやすい横長レイアウト
+- **⚡ よりスマートな連番管理**: 監視開始時とファイル処理後の自動連番更新
 
 ### 🐛 バグ修正（v2.0.2）
 - **区切り文字選択の修正**: UIで区切り文字を変更した時に設定が即座に反映されるように修正
@@ -90,17 +97,17 @@ FileSystemWatcherを使用したリアルタイム監視
 ### インストール方法
 
 #### Windows - インストーラ版（推奨）
-1. [最新リリース](https://github.com/ykmp-dev/RapidPhotoWatcher/releases/latest) から `RapidPhotoWatcher_v2.0.2_Setup.exe` をダウンロード
+1. [最新リリース](https://github.com/ykmp-dev/RapidPhotoWatcher/releases/latest) から `RapidPhotoWatcher_v2.1.0_Setup.exe` をダウンロード
 2. インストーラを実行してウィザードに従う
 3. インストール完了後、デスクトップアイコンまたはスタートメニューから起動
 
 #### クロスプラットフォーム - 手動インストール
 1. [最新リリース](https://github.com/ykmp-dev/RapidPhotoWatcher/releases/latest) から対応するプラットフォーム版をダウンロード
-   - **Windows x64**: `RapidPhotoWatcher-v2.0.2-win-x64.zip`
-   - **macOS Intel**: `RapidPhotoWatcher-v2.0.2-osx-x64.zip`
-   - **macOS Apple Silicon**: `RapidPhotoWatcher-v2.0.2-osx-arm64.zip`
-   - **Linux x64**: `RapidPhotoWatcher-v2.0.2-linux-x64.zip`
-   - **Linux ARM64**: `RapidPhotoWatcher-v2.0.2-linux-arm64.zip`
+   - **Windows x64**: `RapidPhotoWatcher-v2.1-win-x64.zip`
+   - **macOS Intel**: `RapidPhotoWatcher-v2.1-osx-x64.zip`
+   - **macOS Apple Silicon**: `RapidPhotoWatcher-v2.1-osx-arm64.zip`
+   - **Linux x64**: `RapidPhotoWatcher-v2.1-linux-x64.zip`
+   - **Linux ARM64**: `RapidPhotoWatcher-v2.1-linux-arm64.zip`
 2. アーカイブを任意のフォルダに展開
 3. 実行ファイルを起動
    - **Windows**: `RapidPhotoWatcher.AvaloniaUI.exe`をダブルクリック
@@ -183,6 +190,14 @@ dotnet run
 - 同名ファイルが存在する場合、連番を付加して重複を回避します
 
 ## 更新履歴
+
+### v2.1 (2024-10-05) - Smart UI Enhancement
+- **🎨 スマートUI実装**: EOS Utility風の直感的な連番表示システム
+  - 開始番号フィールドが現在の連番を動的に表示
+  - 監視中のリアルタイム連番更新機能
+- **🖼️ ヘッダーデザイン追加**: アプリ名「RapidPhotoWatcher v2.1」を表示する美しいヘッダー
+- **📏 ウィンドウサイズ最適化**: 800x650pxの使いやすい横長レイアウトに変更
+- **⚡ 連番管理の改善**: ファイル処理後の自動UI更新とより良いUX
 
 ### v2.0.2 (2024-10-02) - UI Settings Bug Fix
 - **🐛 区切り文字選択の修正**: UIで区切り文字を変更した時に設定が即座に反映されない問題を修正

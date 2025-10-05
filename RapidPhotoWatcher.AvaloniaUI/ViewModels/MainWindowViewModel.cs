@@ -85,7 +85,7 @@ namespace RapidPhotoWatcher.AvaloniaUI.ViewModels
             set => SetProperty(ref _selectedTabIndex, value);
         }
 
-        public string WindowTitle => "📷 RapidPhotoWatcher v2.0.2";
+        public string WindowTitle => "📷 RapidPhotoWatcher v2.1";
 
         #endregion
 
@@ -117,6 +117,9 @@ namespace RapidPhotoWatcher.AvaloniaUI.ViewModels
                 IsMonitoring = true;
                 StatusMessage = "🟢 監視中...";
                 Log.AddMessage("監視を開始しました");
+                
+                // 監視開始時に現在の連番を更新
+                FileNaming.RefreshCurrentSequenceNumber();
             }
             catch (Exception ex)
             {
@@ -240,6 +243,9 @@ namespace RapidPhotoWatcher.AvaloniaUI.ViewModels
             var message = $"✅ {System.IO.Path.GetFileName(e.OriginalPath)} → {System.IO.Path.GetFileName(e.NewPath)}";
             Log.AddMessage(message);
             StatusMessage = "🟢 処理完了";
+            
+            // ファイル処理後に現在の連番を更新
+            FileNaming.RefreshCurrentSequenceNumber();
         }
 
         private void OnErrorOccurred(object? sender, ErrorEventArgs e)

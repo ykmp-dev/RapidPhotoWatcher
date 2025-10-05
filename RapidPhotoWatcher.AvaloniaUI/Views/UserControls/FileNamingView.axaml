@@ -63,11 +63,51 @@
                                   Text="区切り文字:" 
                                   VerticalAlignment="Center" 
                                   Margin="0,0,12,0"/>
-                        <ComboBox Grid.Row="0" Grid.Column="1" 
-                                 ItemsSource="{Binding SeparatorTypes}"
-                                 SelectedIndex="{Binding SelectedSeparator}"
-                                 IsEnabled="{Binding CanModifySettings}"
-                                 Width="150"/>
+                        <Button Grid.Row="0" Grid.Column="1"
+                               Name="SeparatorButton"
+                               Width="150"
+                               Height="32"
+                               HorizontalContentAlignment="Stretch"
+                               IsEnabled="{Binding CanModifySettings}"
+                               Background="White"
+                               BorderBrush="Gray"
+                               BorderThickness="1"
+                               Click="SeparatorButton_Click">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0"
+                                          Text="{Binding SelectedSeparatorText}" 
+                                          VerticalAlignment="Center" 
+                                          HorizontalAlignment="Left"
+                                          Margin="8,0,0,0"/>
+                                <TextBlock Grid.Column="1"
+                                          Text="▼" 
+                                          VerticalAlignment="Center" 
+                                          HorizontalAlignment="Center"
+                                          Margin="8,0,8,0"/>
+                            </Grid>
+                        </Button>
+                        
+                        <Popup Name="SeparatorPopup"
+                              Grid.Row="0" Grid.Column="1"
+                              PlacementTarget="{Binding ElementName=SeparatorButton}"
+                              Placement="Bottom"
+                              Width="150"
+                              IsOpen="False">
+                            <Border Background="White" 
+                                   BorderBrush="Gray" 
+                                   BorderThickness="1">
+                                <ListBox ItemsSource="{Binding SeparatorTypes}"
+                                        SelectedIndex="{Binding SelectedSeparator}"
+                                        SelectionChanged="SeparatorList_SelectionChanged"
+                                        Background="Transparent">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}" Margin="8,4"/>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Border>
+                        </Popup>
                         
                         <!-- 連番桁数 -->
                         <TextBlock Grid.Row="1" Grid.Column="0" 
@@ -85,11 +125,12 @@
                                       IsEnabled="{Binding CanModifySettings}"
                                       Margin="0,12,0,0"/>
                         
-                        <!-- 開始番号 -->
+                        <!-- 現在番号 -->
                         <TextBlock Grid.Row="1" Grid.Column="2" 
-                                  Text="開始番号:" 
+                                  Text="現在番号:" 
                                   VerticalAlignment="Center" 
-                                  Margin="20,12,12,0"/>
+                                  Margin="20,12,12,0"
+                                  Foreground="{DynamicResource SystemAccentColor}"/>
                         <StackPanel Grid.Row="1" Grid.Column="3" 
                                    Orientation="Horizontal" 
                                    Spacing="8" 
@@ -101,7 +142,10 @@
                                           ShowButtonSpinner="True"
                                           FormatString="0"
                                           Increment="1"
-                                          IsEnabled="{Binding CanModifySettings}"/>
+                                          IsEnabled="{Binding CanModifySettings}"
+                                          FontFamily="Consolas"
+                                          FontWeight="Bold"
+                                          Foreground="{DynamicResource SystemAccentColor}"/>
                             <Button Command="{Binding ResetSequenceCommand}"
                                    Classes="secondary"
                                    IsEnabled="{Binding CanModifySettings}"

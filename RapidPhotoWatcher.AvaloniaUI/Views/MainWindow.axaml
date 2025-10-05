@@ -6,7 +6,7 @@
         x:DataType="vm:MainWindowViewModel"
         Title="{Binding WindowTitle}"
         Width="800" Height="650"
-        MinWidth="720" MinHeight="550"
+        MinWidth="700" MinHeight="600"
         Icon="/Assets/app_icon.ico"
         WindowStartupLocation="CenterScreen"
         CanResize="True"
@@ -17,10 +17,31 @@
         <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <Grid RowDefinitions="*,Auto">
+    <Grid RowDefinitions="Auto,*,Auto">
+        
+        <!-- ヘッダーエリア -->
+        <Border Grid.Row="0" 
+                Background="{DynamicResource SystemControlBackgroundAccentBrush}"
+                Padding="16,12">
+            <Grid ColumnDefinitions="Auto,*">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                    <TextBlock Text="📷" FontSize="24" VerticalAlignment="Center"/>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="RapidPhotoWatcher" 
+                                  FontSize="20" 
+                                  FontWeight="Bold" 
+                                  Foreground="White"/>
+                        <TextBlock Text="v2.1" 
+                                  FontSize="14" 
+                                  Foreground="White" 
+                                  Opacity="0.9"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
         
         <!-- メインコンテンツエリア -->
-        <TabControl Grid.Row="0" 
+        <TabControl Grid.Row="1" 
                    SelectedIndex="{Binding SelectedTabIndex}"
                    Margin="16,16,16,16"
                    TabStripPlacement="Top">
@@ -71,7 +92,7 @@
         </TabControl>
 
         <!-- 下部操作エリア -->
-        <Border Grid.Row="1" 
+        <Border Grid.Row="2" 
                 Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
                 BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumBrush}"
                 BorderThickness="0,1,0,0"

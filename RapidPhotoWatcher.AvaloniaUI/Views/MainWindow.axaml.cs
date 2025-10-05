@@ -12,6 +12,12 @@ namespace RapidPhotoWatcher.AvaloniaUI.Views
         {
             InitializeComponent();
             
+            // 明示的にサイズを設定
+            this.Width = 800;
+            this.Height = 650;
+            this.MinWidth = 700;
+            this.MinHeight = 600;
+            
             // ウィンドウのドラッグ移動を有効にする
             this.PointerPressed += OnPointerPressed;
             
