@@ -55,7 +55,7 @@ Type: filesandordirs; Name: "{userappdata}\RapidPhotoWatcher"
 var
   FtpPage: TInputQueryWizardPage;
 
-{ ピクチャフォルダを取得（{userpics}定数が存在しないInno Setupバージョンがあるため、CSIDLで解決） }
+{ ピクチャフォルダを取得（userpics定数が存在しないInno Setupバージョンがあるため、CSIDLで解決） }
 function GetPicturesFolder(): String;
 begin
   Result := GetShellFolderByCSIDL($0027, False); { CSIDL_MYPICTURES }
