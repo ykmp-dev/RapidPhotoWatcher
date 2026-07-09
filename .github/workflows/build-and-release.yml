@@ -3,9 +3,7 @@ name: Build and Release
 on:
   push:
     tags:
-      - 'v*'  # バージョンタグ (v2.1.0など) でトリガー
-    branches:
-      - 'claude/ftp-auto-setup-install-xtjwmv'  # インストーラービルド検証用(検証後に削除可)
+      - 'v*'  # バージョンタグ (v2.2.0など) でトリガー
   workflow_dispatch:  # 手動実行も可能
 
 jobs:

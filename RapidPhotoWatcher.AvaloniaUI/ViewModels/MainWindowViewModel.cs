@@ -87,7 +87,7 @@ namespace RapidPhotoWatcher.AvaloniaUI.ViewModels
             set => SetProperty(ref _selectedTabIndex, value);
         }
 
-        public string WindowTitle => "📷 RapidPhotoWatcher v2.1";
+        public string WindowTitle => "📷 RapidPhotoWatcher v2.2";
 
         #endregion
 
