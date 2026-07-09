@@ -56,6 +56,16 @@ if /i "!desktop_choice!"=="Y" (
     powershell -Command "$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%USERPROFILE%\Desktop\RapidPhotoWatcher.lnk'); $Shortcut.TargetPath = '%INSTALL_DIR%\RapidPhotoWatcher.exe'; $Shortcut.WorkingDirectory = '%INSTALL_DIR%'; $Shortcut.IconLocation = '%INSTALL_DIR%\app_icon.ico'; $Shortcut.Save()"
 )
 
+REM FTPサーバー自動セットアップ（オプション）
+echo.
+echo カメラからのFTP転送を受信するため、PC側FTPサーバー(IIS)を
+echo 自動セットアップしますか？（管理者権限が必要です） [Y/N]
+set /p ftp_choice=
+if /i "!ftp_choice!"=="Y" (
+    echo FTPサーバーをセットアップしています...
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0Setup-FtpServer.ps1"
+)
+
 echo.
 echo ==========================================
 echo   インストールが完了しました！
