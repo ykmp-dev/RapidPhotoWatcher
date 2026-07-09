@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - 'v*'  # バージョンタグ (v2.2.0など) でトリガー
-    branches:
-      - 'claude/ftp-auto-setup-install-xtjwmv'  # v2.2.0修正版の差し替え用(完了後に削除可)
   workflow_dispatch:  # 手動実行も可能
 
 jobs:
@@ -51,18 +49,6 @@ jobs:
       with:
         name: RapidPhotoWatcher-win-x64-portable
         path: RapidPhotoWatcher-win-x64-portable.zip
-
-    # v2.2.0リリースの資産差し替え用(同名アセットは上書きされる)
-    - name: Update Release v2.2.0 assets (one-off from branch)
-      if: github.ref == 'refs/heads/claude/ftp-auto-setup-install-xtjwmv'
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: v2.2.0
-        files: |
-          Output/RapidPhotoWatcher_v*_Setup.exe
-          RapidPhotoWatcher-win-x64-portable.zip
 
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/')
