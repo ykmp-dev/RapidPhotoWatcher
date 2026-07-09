@@ -1,10 +1,26 @@
-# RapidPhotoWatcher v2.1
+# RapidPhotoWatcher v2.2
 
 [![CI Build](https://github.com/ykmp-dev/RapidPhotoWatcher/actions/workflows/ci.yml/badge.svg)](https://github.com/ykmp-dev/RapidPhotoWatcher/actions/workflows/ci.yml)
 [![Release](https://github.com/ykmp-dev/RapidPhotoWatcher/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/ykmp-dev/RapidPhotoWatcher/actions/workflows/build-and-release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 写真ファイルの高速監視・自動整理を行うクロスプラットフォーム対応デスクトップアプリケーションです。
+
+## ✨ v2.2の新機能
+
+### 📡 **FTPサーバー自動セットアップ** - カメラ直結ワークフロー
+
+カメラ(Canon/Nikon/Sony等)からのFTP転送を受信するPC側環境を、ワンクリックで構築できるようになりました。
+
+- **🚀 アプリ内オンボーディング**: 初回起動時にFTPセットアップ画面を表示。ユーザー名・パスワードを入れるだけでIIS FTPサーバーを自動構成
+- **🧙 インストーラー統合**: セットアップウィザードからもFTP環境を同時構築可能
+- **📶 接続情報の自動表示**: セットアップ完了時にカメラへ設定するIPアドレス・ポート・ユーザー名を表示
+- **🎯 監視フォルダ自動連携**: FTP受信フォルダがそのまま監視フォルダに。転送→リネーム→整理が全自動
+- **🧹 クリーンアンインストール**: アンインストール時にFTP設定の削除も選択可能(写真は保持)
+
+### 🔧 **開発基盤の改善**
+- **CI/リリースワークフローの修復**: インストーラー(Inno Setup)の自動ビルドとGitHub Release自動作成
+- **コード署名対応**: `Installer/Sign-Release.ps1` による成果物への署名体制を整備
 
 ## ✨ v2.1の新機能
 
@@ -140,7 +156,7 @@ FileSystemWatcherを使用したリアルタイム監視
 ### インストール方法
 
 #### Windows - インストーラ版（推奨）
-1. [最新リリース](https://github.com/ykmp-dev/RapidPhotoWatcher/releases/latest) から `RapidPhotoWatcher_v2.1.0_Setup.exe` をダウンロード
+1. [最新リリース](https://github.com/ykmp-dev/RapidPhotoWatcher/releases/latest) から `RapidPhotoWatcher_v2.2.0_Setup.exe` をダウンロード
 2. インストーラを実行してウィザードに従う
 3. 「PC側FTPサーバー(IIS)を自動セットアップする」にチェックを入れると、カメラからのFTP転送受信環境も同時に構築されます（FTPユーザー名・パスワード・ポート・受信フォルダをウィザードで指定）
 4. インストール完了後、デスクトップアイコンまたはスタートメニューから起動
@@ -241,6 +257,23 @@ dotnet run
 "C:\Program Files (x86)\Inno Setup 6\iscc.exe" setup.iss
 ```
 
+### コード署名
+
+リリース成果物(exe・インストーラー・PowerShellスクリプト)への署名は `Installer/Sign-Release.ps1` で行えます(signtool使用、要Windows SDK):
+
+```powershell
+# CA発行のコード署名証明書(PFX)で署名
+.\Installer\Sign-Release.ps1 -PfxPath .\codesign.pfx -PfxPassword (Read-Host -AsSecureString)
+
+# 証明書ストアの証明書(拇印指定)で署名
+.\Installer\Sign-Release.ps1 -Thumbprint <証明書の拇印>
+```
+
+- 署名対象は既定でビルド済みexe・インストーラー・FTPセットアップスクリプトを自動探索します(`-Files` で明示指定も可)
+- タイムスタンプは既定でDigiCert(`-TimestampUrl` で変更可)
+- **SmartScreen警告を消すには認証局(CA)発行のコード署名証明書が必要です**(OV/EV証明書、または [Azure Trusted Signing](https://learn.microsoft.com/azure/trusted-signing/))。自己署名証明書でも署名・改ざん検知は可能ですが、警告は表示されます
+- 参考: [Microsoft Cryptography Tools (signtool)](https://learn.microsoft.com/ja-jp/windows/win32/seccrypto/cryptography-tools)
+
 ## 設定ファイル
 
 設定は以下の場所に自動保存されます：
@@ -262,6 +295,18 @@ dotnet run
 - 同名ファイルが存在する場合、連番を付加して重複を回避します
 
 ## 更新履歴
+
+### v2.2 (2026-07-09) - 📡 FTP Auto-Setup
+**「カメラとPCを最短でつなぐ」** - FTP転送受信環境のワンクリック構築
+
+- **📡 FTPサーバー自動セットアップ**: PC側FTPサーバー(IIS FTP)をアプリ・インストーラーから自動構成
+  - 初回起動時のオンボーディング画面(Windowsのみ・一度だけ表示)
+  - インストーラーのウィザードページからも構築可能
+  - IIS FTP機能有効化・受信フォルダ作成・カメラ用ユーザー作成・ファイアウォール開放まで全自動
+  - 完了時にカメラへ設定する接続情報(IP/ポート/ユーザー名)を表示
+- **🎯 監視フォルダ自動連携**: FTP受信フォルダを初回起動時の監視フォルダに自動設定
+- **🔧 CI/リリースワークフロー修復**: インストーラー自動ビルド + GitHub Release自動作成 + PowerShellスクリプト構文チェック
+- **✍️ コード署名体制**: signtoolベースの署名スクリプト(`Installer/Sign-Release.ps1`)を追加
 
 ### v2.1 (2024-10-05) - 🚀 Smart UI Enhancement
 **「プロカメラマンが求めた理想のUI」** - EOS Utilityにインスパイアされた革命的アップデート
