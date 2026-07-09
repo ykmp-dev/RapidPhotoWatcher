@@ -55,6 +55,14 @@ Type: filesandordirs; Name: "{userappdata}\RapidPhotoWatcher"
 var
   FtpPage: TInputQueryWizardPage;
 
+{ ピクチャフォルダを取得（{userpics}定数が存在しないInno Setupバージョンがあるため、CSIDLで解決） }
+function GetPicturesFolder(): String;
+begin
+  Result := GetShellFolderByCSIDL($0027, False); { CSIDL_MYPICTURES }
+  if Result = '' then
+    Result := ExpandConstant('{userdocs}');
+end;
+
 procedure InitializeWizard;
 begin
   WizardForm.WelcomeLabel2.Caption :=
@@ -80,7 +88,7 @@ begin
   FtpPage.Values[0] := 'camera';
   FtpPage.Values[1] := '';
   FtpPage.Values[2] := '21';
-  FtpPage.Values[3] := ExpandConstant('{userpics}\RapidPhotoWatcher\FTP');
+  FtpPage.Values[3] := GetPicturesFolder + '\RapidPhotoWatcher\FTP';
 end;
 
 function ShouldSkipPage(PageID: Integer): Boolean;
