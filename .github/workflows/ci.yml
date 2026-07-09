@@ -33,3 +33,20 @@ jobs:
           Write-Host "Build failed - output assembly not found"
           exit 1
         }
+
+    - name: Validate installer PowerShell scripts
+      shell: pwsh
+      run: |
+        $hadError = $false
+        foreach ($script in Get-ChildItem Installer/*.ps1) {
+          $tokens = $null; $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile($script.FullName, [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors) {
+            $hadError = $true
+            Write-Host "Syntax errors in $($script.Name):"
+            $errors | ForEach-Object { Write-Host ("  line {0}: {1}" -f $_.Extent.StartLineNumber, $_.Message) }
+          } else {
+            Write-Host "OK: $($script.Name)"
+          }
+        }
+        if ($hadError) { exit 1 }
