@@ -38,6 +38,11 @@
     <Compile Include="..\Shared\ExternalSoftwareController.cs" Link="Services\ExternalSoftwareController.cs" />
   </ItemGroup>
 
+  <!-- FTPセットアップスクリプトを埋め込み（スクリプトファイルが見つからない環境でも実行できるように） -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\Installer\Setup-FtpServer.ps1" Link="Assets\Setup-FtpServer.ps1" />
+  </ItemGroup>
+
   <ItemGroup>
     <Folder Include="Assets\" />
   </ItemGroup>

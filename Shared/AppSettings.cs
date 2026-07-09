@@ -52,10 +52,15 @@ namespace RapidPhotoWatcher
     public class AppSettings
     {
         private const string SettingsFileName = "settings.json";
+        private const string FtpConfigFileName = "ftp-config.json";
         private static readonly string SettingsFilePath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "RapidPhotoWatcher",
             SettingsFileName);
+        private static readonly string FtpConfigFilePath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "RapidPhotoWatcher",
+            FtpConfigFileName);
 
         private int _sequenceStartNumber = 1;
 
@@ -156,6 +161,11 @@ namespace RapidPhotoWatcher
         /// </summary>
         public bool AutoDeleteJpegFiles { get; set; } = false;
 
+        /// <summary>
+        /// FTPセットアップのオンボーディング表示済みフラグ（初回起動時に一度だけ表示）
+        /// </summary>
+        public bool FtpOnboardingShown { get; set; } = false;
+
 
         /// <summary>
         /// 設定ファイルから読み込み
@@ -167,15 +177,17 @@ namespace RapidPhotoWatcher
                 // 設定ファイルが存在しない場合は新規作成
                 if (!File.Exists(SettingsFilePath))
                 {
+                    ApplyInstallerFtpDefaults();
                     CreateDefaultSettingsFile();
                     return;
                 }
 
                 var jsonString = File.ReadAllText(SettingsFilePath);
-                
+
                 // 空ファイルの場合はデフォルト設定で再作成
                 if (string.IsNullOrWhiteSpace(jsonString))
                 {
+                    ApplyInstallerFtpDefaults();
                     CreateDefaultSettingsFile();
                     return;
                 }
@@ -215,13 +227,47 @@ namespace RapidPhotoWatcher
                     AutoActivateExternalSoftware = settings.AutoActivateExternalSoftware;
                     AutoDeleteRawFiles = settings.AutoDeleteRawFiles;
                     AutoDeleteJpegFiles = settings.AutoDeleteJpegFiles;
+                    FtpOnboardingShown = settings.FtpOnboardingShown;
                 }
+
+                // 監視フォルダが未設定の場合はインストーラーのFTP設定から補完
+                ApplyInstallerFtpDefaults();
             }
             catch (Exception ex)
             {
                 // 読み込みに失敗した場合はデフォルト設定で再作成
                 CreateDefaultSettingsFile();
                 throw new InvalidOperationException($"設定ファイルの読み込みに失敗したため、デフォルト設定を作成しました: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// インストーラーが書き出したFTP設定（ftp-config.json）から初期値を適用する。
+        /// インストール時に「PC側FTPサーバーの自動セットアップ」を選択した場合、
+        /// FTP受信フォルダが監視フォルダの初期値になる。
+        /// </summary>
+        private void ApplyInstallerFtpDefaults()
+        {
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(SourceFolder) || !File.Exists(FtpConfigFilePath))
+                {
+                    return;
+                }
+
+                using var document = JsonDocument.Parse(File.ReadAllText(FtpConfigFilePath));
+                if (document.RootElement.TryGetProperty("ftpFolder", out var ftpFolder))
+                {
+                    var folder = ftpFolder.GetString();
+                    if (!string.IsNullOrWhiteSpace(folder))
+                    {
+                        SourceFolder = Path.GetFullPath(folder);
+                    }
+                }
+            }
+            catch
+            {
+                // インストーラー設定は補助情報のため、読み込み失敗時は通常の初期値を使う
             }
         }
 

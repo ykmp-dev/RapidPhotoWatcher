@@ -35,6 +35,9 @@ namespace RapidPhotoWatcher.AvaloniaUI
                     
                     desktop.MainWindow = mainWindow;
                     mainWindow.Show();
+
+                    // 初回起動時のFTPサーバー自動セットアップ案内（Windowsのみ・一度だけ）
+                    _ = viewModel.OfferFtpFirstRunSetupAsync(mainWindow);
                 };
                 
                 // スプラッシュウィンドウを表示

@@ -64,6 +64,13 @@
 - **📝 詳細ログ**: 処理履歴の完全記録とエラートラッキング
 - **💾 設定記憶**: プロジェクトごとの設定保存・復元
 
+### 📡 **FTPサーバー自動セットアップ（Windows・NEW）**
+- **🚀 アプリ内オンボーディング**: 初回起動時にFTPセットアップ画面を表示、アプリ内から数クリックで完了
+- **🔧 ワンストップ導入**: インストーラー経由でもPC側FTPサーバー（IIS FTP）を自動構成
+- **📷 カメラ直結**: Canon/Nikon/Sony等のカメラからのFTP転送をそのまま受信
+- **🎯 監視フォルダ自動連携**: FTP受信フォルダが監視フォルダに自動設定
+- **📶 接続情報の表示**: セットアップ完了時にカメラへ設定するIPアドレス・ポート・ユーザー名を画面表示
+
 ### 🌐 **クロスプラットフォーム**
 - **Windows**: フル機能サポート（Win10/11）
 - **macOS**: ネイティブ対応（Intel/Apple Silicon）
@@ -135,7 +142,34 @@ FileSystemWatcherを使用したリアルタイム監視
 #### Windows - インストーラ版（推奨）
 1. [最新リリース](https://github.com/ykmp-dev/RapidPhotoWatcher/releases/latest) から `RapidPhotoWatcher_v2.1.0_Setup.exe` をダウンロード
 2. インストーラを実行してウィザードに従う
-3. インストール完了後、デスクトップアイコンまたはスタートメニューから起動
+3. 「PC側FTPサーバー(IIS)を自動セットアップする」にチェックを入れると、カメラからのFTP転送受信環境も同時に構築されます（FTPユーザー名・パスワード・ポート・受信フォルダをウィザードで指定）
+4. インストール完了後、デスクトップアイコンまたはスタートメニューから起動
+
+#### FTPサーバー自動セットアップの内容（Windows）
+
+インストーラーでFTPセットアップを選択すると、管理者権限（UAC）の確認後に以下が自動で構成されます：
+
+- **IIS FTPサーバー機能の有効化**（Windows標準機能を使用、追加ソフト不要）
+- **FTP受信フォルダの作成**（既定: `ピクチャ\RapidPhotoWatcher\FTP`）
+- **カメラ接続用ローカルユーザーの作成**（Windowsサインイン画面には表示されません）
+- **IIS FTPサイトの作成**（基本認証、既定ポート21、パッシブポート60000-60100）
+- **Windowsファイアウォールの開放**（制御ポート＋パッシブポート）
+- **FTPサービス（ftpsvc）の自動起動設定**
+
+セットアップ完了後、画面にカメラ側へ設定するIPアドレス・ポート・ユーザー名が表示されます。
+RapidPhotoWatcher の初回起動時には、FTP受信フォルダが監視フォルダとして自動設定されます。
+
+後から手動でセットアップ・削除する場合は、管理者権限のPowerShellで以下を実行してください：
+
+```powershell
+# セットアップ（インストール先のScriptsフォルダに配置されています）
+powershell -ExecutionPolicy Bypass -File "C:\Program Files\RapidPhotoWatcher\Scripts\Setup-FtpServer.ps1"
+
+# 削除（FTPサイト・ファイアウォール規則を削除。写真は残ります）
+powershell -ExecutionPolicy Bypass -File "C:\Program Files\RapidPhotoWatcher\Scripts\Remove-FtpServer.ps1"
+```
+
+> **注意**: FTPは平文プロトコルのため、カメラとPCが同一LAN内にある環境での利用を想定しています。FTPS対応カメラの場合はFTPSでの接続も可能です（SSL任意設定）。
 
 #### クロスプラットフォーム - 手動インストール
 1. [最新リリース](https://github.com/ykmp-dev/RapidPhotoWatcher/releases/latest) から対応するプラットフォーム版をダウンロード
@@ -165,6 +199,8 @@ RapidPhotoWatcher/
 ├── Shared/                          # 共有ビジネスロジック
 ├── WindowsForms-Original/           # 旧版（Windows Forms）
 ├── Installer/                       # インストーラーファイル
+│   ├── Setup-FtpServer.ps1          # PC側FTPサーバー(IIS)自動セットアップ
+│   └── Remove-FtpServer.ps1         # FTPサーバー設定の削除
 └── setup.iss                       # Inno Setupスクリプト
 ```
 
