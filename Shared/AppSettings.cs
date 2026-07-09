@@ -161,6 +161,11 @@ namespace RapidPhotoWatcher
         /// </summary>
         public bool AutoDeleteJpegFiles { get; set; } = false;
 
+        /// <summary>
+        /// FTPセットアップのオンボーディング表示済みフラグ（初回起動時に一度だけ表示）
+        /// </summary>
+        public bool FtpOnboardingShown { get; set; } = false;
+
 
         /// <summary>
         /// 設定ファイルから読み込み
@@ -222,6 +227,7 @@ namespace RapidPhotoWatcher
                     AutoActivateExternalSoftware = settings.AutoActivateExternalSoftware;
                     AutoDeleteRawFiles = settings.AutoDeleteRawFiles;
                     AutoDeleteJpegFiles = settings.AutoDeleteJpegFiles;
+                    FtpOnboardingShown = settings.FtpOnboardingShown;
                 }
 
                 // 監視フォルダが未設定の場合はインストーラーのFTP設定から補完

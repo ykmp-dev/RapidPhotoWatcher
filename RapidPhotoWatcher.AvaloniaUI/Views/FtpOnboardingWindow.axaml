@@ -1,0 +1,46 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="RapidPhotoWatcher.AvaloniaUI.Views.FtpOnboardingWindow"
+        Title="FTPサーバー自動セットアップ"
+        Width="520" SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+  <StackPanel Margin="24" Spacing="14">
+
+    <TextBlock Text="📡 カメラからのFTP転送を受信しますか？"
+               FontSize="18" FontWeight="Bold"/>
+
+    <TextBlock TextWrapping="Wrap" Opacity="0.85"
+               Text="Canon / Nikon / Sony などのカメラからWi-Fi・有線LAN経由で写真をこのPCへ直接転送できるように、Windows標準のFTPサーバー(IIS)を自動セットアップします。セットアップ後はFTP受信フォルダが監視フォルダとして自動設定され、転送された写真がそのままリネーム・整理されます。"/>
+
+    <Border Background="#10808080" CornerRadius="6" Padding="16">
+      <Grid ColumnDefinitions="140,*" RowDefinitions="Auto,Auto,Auto,Auto" >
+
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="FTPユーザー名:" VerticalAlignment="Center" Margin="0,0,0,10"/>
+        <TextBox   Grid.Row="0" Grid.Column="1" x:Name="UserNameBox" Text="camera" Margin="0,0,0,10"/>
+
+        <TextBlock Grid.Row="1" Grid.Column="0" Text="FTPパスワード:" VerticalAlignment="Center" Margin="0,0,0,10"/>
+        <TextBox   Grid.Row="1" Grid.Column="1" x:Name="PasswordBox" PasswordChar="●" Margin="0,0,0,10"
+                   Watermark="カメラに設定するパスワード"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="0" Text="ポート番号:" VerticalAlignment="Center" Margin="0,0,0,10"/>
+        <TextBox   Grid.Row="2" Grid.Column="1" x:Name="PortBox" Text="21" Margin="0,0,0,10"/>
+
+        <TextBlock Grid.Row="3" Grid.Column="0" Text="FTP受信フォルダ:" VerticalAlignment="Center"/>
+        <TextBox   Grid.Row="3" Grid.Column="1" x:Name="FolderBox"/>
+      </Grid>
+    </Border>
+
+    <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+               Text="※ セットアップには管理者権限(UAC)の確認が表示されます。Windows機能の有効化を含むため、数分かかる場合があります。"/>
+
+    <TextBlock x:Name="StatusText" TextWrapping="Wrap" FontWeight="Bold" IsVisible="False"/>
+
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+      <Button x:Name="SkipButton" Content="あとで設定する" Click="OnSkipClick"/>
+      <Button x:Name="SetupButton" Content="セットアップ実行" Classes="accent" Click="OnSetupClick"/>
+    </StackPanel>
+
+  </StackPanel>
+</Window>

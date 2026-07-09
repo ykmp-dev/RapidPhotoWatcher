@@ -2,6 +2,8 @@ using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using RapidPhotoWatcher.AvaloniaUI.Commands;
+using RapidPhotoWatcher.AvaloniaUI.Services;
+using RapidPhotoWatcher.AvaloniaUI.Views;
 
 namespace RapidPhotoWatcher.AvaloniaUI.ViewModels
 {
@@ -98,6 +100,53 @@ namespace RapidPhotoWatcher.AvaloniaUI.ViewModels
         #endregion
 
         #region Command Methods
+
+        /// <summary>
+        /// 初回起動時にFTPサーバー自動セットアップ画面を表示する（Windowsのみ・一度だけ）。
+        /// セットアップ成功時はFTP受信フォルダを監視フォルダとして設定する。
+        /// </summary>
+        public async Task OfferFtpFirstRunSetupAsync(Avalonia.Controls.Window owner)
+        {
+            try
+            {
+                if (!FtpSetupService.IsSupported || _settings.FtpOnboardingShown)
+                {
+                    return;
+                }
+
+                // インストーラー等で既にセットアップ済みなら表示しない
+                if (FtpSetupService.IsConfigured)
+                {
+                    _settings.FtpOnboardingShown = true;
+                    _settings.Save();
+                    return;
+                }
+
+                var onboarding = new FtpOnboardingWindow();
+                var ftpFolder = await onboarding.ShowDialog<string?>(owner);
+
+                _settings.FtpOnboardingShown = true;
+
+                if (!string.IsNullOrWhiteSpace(ftpFolder))
+                {
+                    if (string.IsNullOrWhiteSpace(BasicSettings.SourceFolder))
+                    {
+                        BasicSettings.SourceFolder = ftpFolder;
+                    }
+                    if (string.IsNullOrWhiteSpace(_settings.SourceFolder))
+                    {
+                        _settings.SourceFolder = ftpFolder;
+                    }
+                    Log.AddMessage($"FTPサーバーをセットアップしました（受信フォルダ: {ftpFolder}）");
+                }
+
+                _settings.Save();
+            }
+            catch (Exception ex)
+            {
+                Log.AddMessage($"FTPセットアップ画面の表示に失敗しました: {ex.Message}");
+            }
+        }
 
         private bool CanStartMonitoring() => !IsMonitoring;
         private bool CanStopMonitoring() => IsMonitoring;
