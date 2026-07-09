@@ -53,7 +53,7 @@ Type: filesandordirs; Name: "{userappdata}\RapidPhotoWatcher"
 
 [Code]
 var
-  FtpPage: TInputQueryPage;
+  FtpPage: TInputQueryWizardPage;
 
 procedure InitializeWizard;
 begin
