@@ -86,3 +86,5 @@ Installer/*.zip
 
 # Allow release installer exe files
 !Installer/*Setup.exe
+# Inno Setup build output
+Output/

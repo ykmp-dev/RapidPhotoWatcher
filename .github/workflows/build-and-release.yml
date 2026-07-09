@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - 'v*'  # バージョンタグ (v2.2.0など) でトリガー
-    branches:
-      - 'claude/ftp-auto-setup-install-xtjwmv'  # v2.2.0リリース発行用(発行後に削除可)
   workflow_dispatch:  # 手動実行も可能
 
 jobs:
@@ -32,7 +30,7 @@ jobs:
         }
         & $iscc setup.iss
         if ($LASTEXITCODE -ne 0) { exit 1 }
-        Get-ChildItem Installer\*.exe | ForEach-Object { Write-Host "Installer: $($_.Name) ($([math]::Round($_.Length/1MB,1)) MB)" }
+        Get-ChildItem Output\*.exe | ForEach-Object { Write-Host "Installer: $($_.Name) ($([math]::Round($_.Length/1MB,1)) MB)" }
 
     - name: Create portable ZIP
       run: |
@@ -44,49 +42,13 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: RapidPhotoWatcher-Setup
-        path: Installer/RapidPhotoWatcher_v*_Setup.exe
+        path: Output/RapidPhotoWatcher_v*_Setup.exe
 
     - name: Upload portable artifact
       uses: actions/upload-artifact@v4
       with:
         name: RapidPhotoWatcher-win-x64-portable
         path: RapidPhotoWatcher-win-x64-portable.zip
-
-    # タグを直接pushできない環境からのリリース発行用:
-    # tag_name指定によりリリース作成と同時にタグv2.2.0がmainに作成される
-    - name: Create Release v2.2.0 (one-off from branch)
-      if: github.ref == 'refs/heads/claude/ftp-auto-setup-install-xtjwmv'
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: v2.2.0
-        target_commitish: main
-        name: RapidPhotoWatcher v2.2.0
-        body: |
-          ## RapidPhotoWatcher v2.2.0 - 📡 FTP Auto-Setup
-
-          カメラ(Canon/Nikon/Sony等)からのFTP転送を受信するPC側環境を、ワンクリックで構築できるようになりました。
-
-          ### インストール方法
-          - **インストーラー版(推奨)**: `RapidPhotoWatcher_v2.2.0_Setup.exe` を実行
-            - ウィザードの「PC側FTPサーバー(IIS)を自動セットアップする」でFTP受信環境も同時構築
-          - **ポータブル版**: `RapidPhotoWatcher-win-x64-portable.zip` を展開して `RapidPhotoWatcher.AvaloniaUI.exe` を実行
-            - 初回起動時にFTPセットアップのオンボーディング画面が表示されます
-
-          ### 新機能
-          - 📡 PC側FTPサーバー(IIS FTP)の自動セットアップ(アプリ内オンボーディング/インストーラー統合)
-          - 📶 セットアップ完了時にカメラへ設定するIPアドレス・ポート・ユーザー名を表示
-          - 🎯 FTP受信フォルダを監視フォルダへ自動設定
-          - 🔧 CI/リリースワークフローの修復、✍️ コード署名スクリプト追加
-
-          ### システム要件
-          - Windows 10/11 (x64)、.NET Runtime不要(自己完結型)
-        files: |
-          Installer/RapidPhotoWatcher_v*_Setup.exe
-          RapidPhotoWatcher-win-x64-portable.zip
-        draft: false
-        prerelease: false
 
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/')
@@ -115,7 +77,7 @@ jobs:
           - 即座監視とポーリング監視の両モード対応
           - プレビューアプリケーション連携・詳細ログ・設定の永続化
         files: |
-          Installer/RapidPhotoWatcher_v*_Setup.exe
+          Output/RapidPhotoWatcher_v*_Setup.exe
           RapidPhotoWatcher-win-x64-portable.zip
         draft: false
         prerelease: false

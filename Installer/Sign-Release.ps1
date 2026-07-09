@@ -71,11 +71,13 @@ Write-Host "signtool: $signtool"
 if (-not $Files) {
     $defaults = @(
         (Join-Path $repoRoot 'RapidPhotoWatcher.AvaloniaUI\bin\Release\net8.0\win-x64\publish\RapidPhotoWatcher.AvaloniaUI.exe'),
-        (Join-Path $repoRoot 'Installer\RapidPhotoWatcher_v2.1.0_Setup.exe'),
         (Join-Path $PSScriptRoot 'Setup-FtpServer.ps1'),
         (Join-Path $PSScriptRoot 'Remove-FtpServer.ps1')
     )
-    $Files = $defaults | Where-Object { Test-Path $_ }
+    # ビルド済みインストーラー(Output\)も対象に含める
+    $defaults += @(Get-ChildItem -Path (Join-Path $repoRoot 'Output\RapidPhotoWatcher_v*_Setup.exe') -ErrorAction SilentlyContinue |
+        Select-Object -ExpandProperty FullName)
+    $Files = $defaults | Where-Object { $_ -and (Test-Path $_) }
     if (-not $Files) {
         throw '署名対象が見つかりません。先にビルド(dotnet publish / iscc)を実行するか、-Files で指定してください。'
     }
