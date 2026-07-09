@@ -3,7 +3,7 @@ name: Build and Release
 on:
   push:
     tags:
-      - 'v*'  # バージョンタグ (v1.0.0など) でトリガー
+      - 'v*'  # バージョンタグ (v2.1.0など) でトリガー
   workflow_dispatch:  # 手動実行も可能
 
 jobs:
@@ -17,26 +17,38 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '6.0.x'
+        dotnet-version: '8.0.x'
 
-    - name: Restore dependencies
-      run: dotnet restore
+    - name: Publish (win-x64, self-contained)
+      run: dotnet publish RapidPhotoWatcher.AvaloniaUI/RapidPhotoWatcher.AvaloniaUI.csproj -c Release -r win-x64 --self-contained true
 
-    - name: Build and publish
+    - name: Build installer (Inno Setup)
       run: |
-        dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:PublishReadyToRun=true -o "./publish/win-x64"
+        $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+        if (-not (Test-Path $iscc)) {
+          choco install innosetup -y --no-progress
+        }
+        & $iscc setup.iss
+        if ($LASTEXITCODE -ne 0) { exit 1 }
+        Get-ChildItem Installer\*.exe | ForEach-Object { Write-Host "Installer: $($_.Name) ($([math]::Round($_.Length/1MB,1)) MB)" }
 
-    - name: Create ZIP archive
+    - name: Create portable ZIP
       run: |
-        ls -la "./publish/win-x64/"
-        Compress-Archive -Path "./publish/win-x64/*" -DestinationPath "./JPEGFolderMonitor-win-x64.zip"
-        ls -la "./JPEGFolderMonitor-win-x64.zip"
+        Compress-Archive -Path "RapidPhotoWatcher.AvaloniaUI/bin/Release/net8.0/win-x64/publish/*" -DestinationPath "RapidPhotoWatcher-win-x64-portable.zip"
+        Copy-Item Installer/Setup-FtpServer.ps1, Installer/Remove-FtpServer.ps1 -Destination .
+        Compress-Archive -Path "Setup-FtpServer.ps1", "Remove-FtpServer.ps1" -Update -DestinationPath "RapidPhotoWatcher-win-x64-portable.zip"
 
-    - name: Upload build artifacts
+    - name: Upload installer artifact
       uses: actions/upload-artifact@v4
       with:
-        name: JPEGFolderMonitor-win-x64
-        path: ./JPEGFolderMonitor-win-x64.zip
+        name: RapidPhotoWatcher-Setup
+        path: Installer/RapidPhotoWatcher_v*_Setup.exe
+
+    - name: Upload portable artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: RapidPhotoWatcher-win-x64-portable
+        path: RapidPhotoWatcher-win-x64-portable.zip
 
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/')
@@ -45,30 +57,27 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ github.ref_name }}
-        name: JPEG/RAW Folder Monitor ${{ github.ref_name }}
+        name: RapidPhotoWatcher ${{ github.ref_name }}
         body: |
-          ## JPEG/RAW Folder Monitor ${{ github.ref_name }}
-          
-          ### 新機能・変更点
-          - JPEG/RAWファイルの自動監視・リネーム・移動機能
-          - 即座監視とポーリング監視の両モード対応
-          - プレビューアプリケーション連携
-          - 詳細ログ機能
-          - 設定の永続化
-          
+          ## RapidPhotoWatcher ${{ github.ref_name }}
+
+          ### インストール方法
+          - **インストーラー版(推奨)**: `RapidPhotoWatcher_v*_Setup.exe` を実行
+            - PC側FTPサーバー(IIS)の自動セットアップをウィザードから選択できます
+          - **ポータブル版**: `RapidPhotoWatcher-win-x64-portable.zip` を展開して `RapidPhotoWatcher.AvaloniaUI.exe` を実行
+            - 初回起動時にFTPセットアップのオンボーディング画面が表示されます
+
           ### システム要件
           - Windows 10/11 (x64)
-          - .NET Runtime不要（セルフコンテインド版）
-          
-          ### インストール方法
-          1. `JPEGFolderMonitor-win-x64.zip` をダウンロード
-          2. 任意のフォルダに展開
-          3. `JPEGFolderMonitor.exe` を実行
-          
-          ### サポート対象ファイル
-          - **JPEG**: .jpg, .jpeg
-          - **RAW**: .cr2, .cr3, .arw, .nef, .rw2, .orf, .dng
+          - .NET Runtime不要（自己完結型）
+
+          ### 主な機能
+          - JPEG/RAWファイルの自動監視・リネーム・移動
+          - カメラからのFTP転送受信環境の自動セットアップ（IIS FTP）
+          - 即座監視とポーリング監視の両モード対応
+          - プレビューアプリケーション連携・詳細ログ・設定の永続化
         files: |
-          ./JPEGFolderMonitor-win-x64.zip
+          Installer/RapidPhotoWatcher_v*_Setup.exe
+          RapidPhotoWatcher-win-x64-portable.zip
         draft: false
         prerelease: false
