@@ -17,19 +17,19 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '6.0.x'
+        dotnet-version: '8.0.x'
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore RapidPhotoWatcher.AvaloniaUI/RapidPhotoWatcher.AvaloniaUI.csproj
 
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build RapidPhotoWatcher.AvaloniaUI/RapidPhotoWatcher.AvaloniaUI.csproj --configuration Release --no-restore
 
     - name: Test build output
       run: |
-        if (Test-Path "./bin/Release/net6.0-windows/JPEGFolderMonitor.exe") {
-          Write-Host "✓ Build successful - EXE file created"
+        if (Test-Path "./RapidPhotoWatcher.AvaloniaUI/bin/Release/net8.0/RapidPhotoWatcher.AvaloniaUI.dll") {
+          Write-Host "Build successful - output assembly created"
         } else {
-          Write-Host "✗ Build failed - EXE file not found"
+          Write-Host "Build failed - output assembly not found"
           exit 1
         }
