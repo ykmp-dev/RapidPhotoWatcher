@@ -188,6 +188,21 @@ try {
     Set-Service -Name 'ftpsvc' -StartupType Automatic
     Restart-Service -Name 'ftpsvc' -Force
 
+    # --- 7. アプリ連携用設定ファイル(ftp-config.json)の書き出し ---
+    # RapidPhotoWatcher が初回起動時にこれを読み、FTP受信フォルダを監視フォルダの初期値にする
+    Write-Step 'RapidPhotoWatcher 連携設定を書き出しています...'
+    $configDir = Join-Path $env:APPDATA 'RapidPhotoWatcher'
+    New-Item -ItemType Directory -Path $configDir -Force | Out-Null
+    $ftpConfig = [ordered]@{
+        ftpFolder   = ($FtpRoot -replace '\\', '/')
+        ftpUserName = $UserName
+        ftpPort     = $Port
+    } | ConvertTo-Json
+    [System.IO.File]::WriteAllText(
+        (Join-Path $configDir 'ftp-config.json'),
+        $ftpConfig,
+        (New-Object System.Text.UTF8Encoding $false))
+
     # --- 完了サマリー ---
     $ipAddresses = @(Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
         Where-Object { $_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '169.254.*' } |
@@ -207,8 +222,8 @@ try {
     Write-Host ''
     Write-Host '  PC側:'
     Write-Host "    FTP受信フォルダ     : $FtpRoot"
-    Write-Host '    ※ RapidPhotoWatcher の監視フォルダに上記フォルダを設定すると、'
-    Write-Host '       カメラから転送された写真が自動でリネーム・整理されます。'
+    Write-Host '    ※ RapidPhotoWatcher の初回起動時に、上記フォルダが監視フォルダとして'
+    Write-Host '       自動設定されます（設定済みの場合は上書きしません）。'
     Write-Host "    ログ                : $logPath"
     Write-Host ''
 

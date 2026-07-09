@@ -87,6 +87,12 @@ if ($RemoveUser) {
     }
 }
 
+# --- アプリ連携用設定ファイルの削除 ---
+$ftpConfigPath = Join-Path $env:APPDATA 'RapidPhotoWatcher\ftp-config.json'
+if (Test-Path $ftpConfigPath) {
+    Remove-Item $ftpConfigPath -Force -ErrorAction SilentlyContinue
+}
+
 Write-Host ''
 Write-Host 'FTPサーバー設定の削除が完了しました。' -ForegroundColor Green
 Write-Host '※ IISのWindows機能とFTP受信フォルダ内の写真はそのまま残っています。'
