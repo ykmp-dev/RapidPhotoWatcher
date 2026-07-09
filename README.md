@@ -241,6 +241,23 @@ dotnet run
 "C:\Program Files (x86)\Inno Setup 6\iscc.exe" setup.iss
 ```
 
+### コード署名
+
+リリース成果物(exe・インストーラー・PowerShellスクリプト)への署名は `Installer/Sign-Release.ps1` で行えます(signtool使用、要Windows SDK):
+
+```powershell
+# CA発行のコード署名証明書(PFX)で署名
+.\Installer\Sign-Release.ps1 -PfxPath .\codesign.pfx -PfxPassword (Read-Host -AsSecureString)
+
+# 証明書ストアの証明書(拇印指定)で署名
+.\Installer\Sign-Release.ps1 -Thumbprint <証明書の拇印>
+```
+
+- 署名対象は既定でビルド済みexe・インストーラー・FTPセットアップスクリプトを自動探索します(`-Files` で明示指定も可)
+- タイムスタンプは既定でDigiCert(`-TimestampUrl` で変更可)
+- **SmartScreen警告を消すには認証局(CA)発行のコード署名証明書が必要です**(OV/EV証明書、または [Azure Trusted Signing](https://learn.microsoft.com/azure/trusted-signing/))。自己署名証明書でも署名・改ざん検知は可能ですが、警告は表示されます
+- 参考: [Microsoft Cryptography Tools (signtool)](https://learn.microsoft.com/ja-jp/windows/win32/seccrypto/cryptography-tools)
+
 ## 設定ファイル
 
 設定は以下の場所に自動保存されます：
